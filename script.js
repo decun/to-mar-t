@@ -192,11 +192,11 @@ responseSend.addEventListener("click", () => {
   playTapSound(1);
   responseSendClicks += 1;
   const teaseMessages = [
-    "Huh… ¿segura? (1/6)",
-    "Huh otra vez… (2/6)",
-    "Usagi sigue confundido… huh. (3/6)",
-    "¿Todavía esa opción? Huh… (4/6)",
-    "Un último huh… piénsalo bien. (5/6)"
+    "Huh… ¿segura?",
+    "Huh otra vez…",
+    "Usagi sigue confundido… huh.",
+    "¿Todavía esa opción? Huh…",
+    "Usagi te está mirando fijamente… huh."
   ];
   if (responseSendClicks >= 6) showResponseFinal();
   else responseTease.textContent = teaseMessages[responseSendClicks - 1];

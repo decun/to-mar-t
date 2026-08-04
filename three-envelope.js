@@ -171,7 +171,7 @@ if (canvas && stage && toggle) {
       const paragraphs = [...(article?.querySelectorAll("p") ?? [])];
       const currentPage = Number(article?.dataset.currentPage ?? 0);
       const pageCount = Math.max(1, ...paragraphs.map((paragraph) => Number(paragraph.dataset.letterPage ?? 0) + 1));
-      const pageHeadings = [heading, "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…"];
+      const pageHeadings = [heading, "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…", "Y una última opción…"];
       const messages = paragraphs
         .filter((paragraph) => !paragraph.classList.contains("signature") && Number(paragraph.dataset.letterPage ?? 0) === currentPage)
         .map((paragraph) => paragraph.textContent?.trim() ?? "")
@@ -211,13 +211,23 @@ if (canvas && stage && toggle) {
         lineHeight = Math.round(bodyFontSize * 1.22);
         paragraphGap = Math.max(6, Math.round(bodyFontSize * 0.35));
         letterContext.font = `500 ${bodyFontSize}px "Cormorant Garamond", Georgia, serif`;
-        wrappedParagraphs = messages.map((message) => getWrappedLetterLines(message, textWidth));
-        const bodyHeight = wrappedParagraphs.reduce((height, lines) => height + lines.length * lineHeight, 0)
-          + Math.max(0, wrappedParagraphs.length - 1) * paragraphGap;
-        const signatureHeight = signature ? Math.round(bodyFontSize * 1.2) + 14 : 0;
-        if (bodyHeight + signatureHeight <= textBottom - textTop) break;
+        const everyPageFits = Array.from({ length: pageCount }, (_, pageIndex) => {
+          const pageMessages = paragraphs
+            .filter((paragraph) => !paragraph.classList.contains("signature") && Number(paragraph.dataset.letterPage ?? 0) === pageIndex)
+            .map((paragraph) => paragraph.textContent?.trim() ?? "")
+            .filter(Boolean);
+          const pageParagraphs = pageMessages.map((message) => getWrappedLetterLines(message, textWidth));
+          const bodyHeight = pageParagraphs.reduce((height, lines) => height + lines.length * lineHeight, 0)
+            + Math.max(0, pageParagraphs.length - 1) * paragraphGap;
+          const hasSignature = paragraphs.some((paragraph) => paragraph.classList.contains("signature")
+            && Number(paragraph.dataset.letterPage ?? -1) === pageIndex);
+          const signatureHeight = hasSignature ? Math.round(bodyFontSize * 1.2) + 14 : 0;
+          return bodyHeight + signatureHeight <= textBottom - textTop;
+        }).every(Boolean);
+        if (everyPageFits || bodyFontSize === 25) break;
         bodyFontSize -= 1;
       }
+      wrappedParagraphs = messages.map((message) => getWrappedLetterLines(message, textWidth));
 
       letterContext.fillStyle = "#173a5a";
       letterContext.font = `500 ${bodyFontSize}px "Cormorant Garamond", Georgia, serif`;

@@ -34,6 +34,7 @@ const responseDate = document.querySelector("#response-date");
 const responseSend = document.querySelector("#response-send");
 const responseTease = document.querySelector("#response-tease");
 const responseDone = document.querySelector("#response-done");
+const pageTurnSound = document.querySelector("#sound-page-turn");
 const tapProgress = [...document.querySelectorAll("#tap-progress i")];
 const tapSounds = [
   document.querySelector("#sound-una"),
@@ -166,10 +167,21 @@ function setLetterPage(page) {
   stage.dispatchEvent(new CustomEvent("letter-page-change", { detail: { page: currentLetterPage } }));
 }
 
-pagePrevious.addEventListener("click", () => setLetterPage(currentLetterPage - 1));
-pageNext.addEventListener("click", () => setLetterPage(currentLetterPage + 1));
-readerPrevious.addEventListener("click", () => setLetterPage(currentLetterPage - 1));
-readerNext.addEventListener("click", () => setLetterPage(currentLetterPage + 1));
+function turnLetterPage(direction) {
+  const nextPage = Math.max(0, Math.min(letterPageCount - 1, currentLetterPage + direction));
+  if (nextPage === currentLetterPage) return;
+  pageTurnSound.pause();
+  pageTurnSound.currentTime = 0;
+  pageTurnSound.volume = 0.58;
+  pageTurnSound.playbackRate = direction > 0 ? 1 : 0.94;
+  pageTurnSound.play().catch(() => {});
+  setLetterPage(nextPage);
+}
+
+pagePrevious.addEventListener("click", () => turnLetterPage(-1));
+pageNext.addEventListener("click", () => turnLetterPage(1));
+readerPrevious.addEventListener("click", () => turnLetterPage(-1));
+readerNext.addEventListener("click", () => turnLetterPage(1));
 readingZoomTrigger.addEventListener("click", openReader);
 readerClose.addEventListener("click", closeReader);
 readerSmaller.addEventListener("click", () => { readerZoomIndex = Math.max(0, readerZoomIndex - 1); updateReaderZoom(); });
@@ -310,6 +322,7 @@ close.addEventListener("click", () => {
 });
 
 tapSounds.forEach((sound) => sound.load());
+pageTurnSound.load();
 
 function enableMobileParallax() {
   const usesTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;

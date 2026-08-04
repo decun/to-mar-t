@@ -55,6 +55,8 @@ let responseUnlocked = false;
 let responseOpenedFrom = null;
 let responseSendClicks = 0;
 let responseResolved = false;
+let responseSubmitting = false;
+const responseEndpoint = "https://formspree.io/f/xbgrreow";
 const readerZoomLevels = [1, 1.2, 1.4, 1.6];
 const readerPageHeadings = ["Estimada Martina:", "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…", "Y una última opción…"];
 const letterPageCount = Math.max(1, ...[...letter.querySelectorAll("[data-letter-page]")]
@@ -153,6 +155,7 @@ function closeResponseDialog() {
 
 function showResponseFinal(result) {
   responseResolved = true;
+  responseSubmitting = false;
   const choseDate = result === "date";
   responseResultTitle.textContent = choseDate ? "¡Yahaaa!" : "Okk…";
   responseResultImage.src = choseDate ? "./assets/usagi-happy.gif" : "./assets/usagi-emo.jpg";
@@ -202,17 +205,45 @@ responseStampTrigger.addEventListener("click", openResponseDialog);
 responseClose.addEventListener("click", closeResponseDialog);
 responseDone.addEventListener("click", closeResponseDialog);
 responseDialog.addEventListener("click", (event) => { if (event.target === responseDialog) closeResponseDialog(); });
+async function submitResponse(choice) {
+  if (responseSubmitting || responseResolved) return;
+  responseSubmitting = true;
+  responseDate.disabled = true;
+  responseSend.disabled = true;
+  responseTease.textContent = "Enviando respuesta…";
+
+  const formData = new FormData();
+  formData.append("respuesta", choice === "date" ? "Salir conmigo" : "Que le envíes el regalo");
+  formData.append("destinataria", "Martina");
+  formData.append("_subject", "Martina respondió la carta");
+
+  try {
+    const formResponse = await fetch(responseEndpoint, {
+      method: "POST",
+      body: formData,
+      headers: { Accept: "application/json" }
+    });
+    if (!formResponse.ok) throw new Error("No se pudo enviar la respuesta");
+    showResponseFinal(choice);
+  } catch (_) {
+    responseSubmitting = false;
+    responseDate.disabled = false;
+    responseSend.disabled = false;
+    responseTease.textContent = "No se pudo enviar. Toca la opción nuevamente.";
+  }
+}
+
 responseDate.addEventListener("click", () => {
   playTapSound(2);
-  showResponseFinal("date");
+  submitResponse("date");
 });
 responseSend.addEventListener("click", () => {
   playTapSound(1);
-  responseSendClicks += 1;
+  responseSendClicks = Math.min(6, responseSendClicks + 1);
   responseTease.textContent = Array.from({ length: responseSendClicks }, () => "Huh…").join(" ");
   if (responseSendClicks >= 6) {
     responseSend.disabled = true;
-    window.setTimeout(() => showResponseFinal("gift"), 520);
+    window.setTimeout(() => submitResponse("gift"), 520);
   }
 });
 document.addEventListener("keydown", (event) => {
@@ -270,8 +301,10 @@ function setOpen(open) {
     responseUnlocked = false;
     responseSendClicks = 0;
     responseResolved = false;
+    responseSubmitting = false;
     responseQuestion.hidden = false;
     responseFinal.hidden = true;
+    responseDate.disabled = false;
     responseResultImage.removeAttribute("src");
     responseResultImage.alt = "";
     responseSend.disabled = false;

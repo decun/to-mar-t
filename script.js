@@ -191,15 +191,11 @@ responseDate.addEventListener("click", () => {
 responseSend.addEventListener("click", () => {
   playTapSound(1);
   responseSendClicks += 1;
-  const teaseMessages = [
-    "Huh… ¿segura?",
-    "Huh otra vez…",
-    "Usagi sigue confundido… huh.",
-    "¿Todavía esa opción? Huh…",
-    "Usagi te está mirando fijamente… huh."
-  ];
-  if (responseSendClicks >= 6) showResponseFinal();
-  else responseTease.textContent = teaseMessages[responseSendClicks - 1];
+  responseTease.textContent = Array.from({ length: responseSendClicks }, () => "Huh…").join(" ");
+  if (responseSendClicks >= 6) {
+    responseSend.disabled = true;
+    window.setTimeout(showResponseFinal, 520);
+  }
 });
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
@@ -258,6 +254,7 @@ function setOpen(open) {
     responseResolved = false;
     responseQuestion.hidden = false;
     responseFinal.hidden = true;
+    responseSend.disabled = false;
     responseTease.textContent = "";
     setLetterPage(0);
     tapCount = 0;

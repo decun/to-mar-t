@@ -30,6 +30,8 @@ const responseDialog = document.querySelector("#response-dialog");
 const responseClose = document.querySelector("#response-close");
 const responseQuestion = document.querySelector("#response-question");
 const responseFinal = document.querySelector("#response-final");
+const responseResultTitle = document.querySelector("#response-result-title");
+const responseResultImage = document.querySelector("#response-result-image");
 const responseDate = document.querySelector("#response-date");
 const responseSend = document.querySelector("#response-send");
 const responseTease = document.querySelector("#response-tease");
@@ -149,8 +151,12 @@ function closeResponseDialog() {
   responseOpenedFrom?.focus?.();
 }
 
-function showResponseFinal() {
+function showResponseFinal(result) {
   responseResolved = true;
+  const choseDate = result === "date";
+  responseResultTitle.textContent = choseDate ? "¡Yahaaa!" : "Okk…";
+  responseResultImage.src = choseDate ? "./assets/usagi-happy.gif" : "./assets/usagi-emo.jpg";
+  responseResultImage.alt = choseDate ? "Usagi corriendo feliz" : "Usagi emo";
   responseQuestion.hidden = true;
   responseFinal.hidden = false;
   requestAnimationFrame(() => responseDone.focus());
@@ -198,7 +204,7 @@ responseDone.addEventListener("click", closeResponseDialog);
 responseDialog.addEventListener("click", (event) => { if (event.target === responseDialog) closeResponseDialog(); });
 responseDate.addEventListener("click", () => {
   playTapSound(2);
-  showResponseFinal();
+  showResponseFinal("date");
 });
 responseSend.addEventListener("click", () => {
   playTapSound(1);
@@ -206,7 +212,7 @@ responseSend.addEventListener("click", () => {
   responseTease.textContent = Array.from({ length: responseSendClicks }, () => "Huh…").join(" ");
   if (responseSendClicks >= 6) {
     responseSend.disabled = true;
-    window.setTimeout(showResponseFinal, 520);
+    window.setTimeout(() => showResponseFinal("gift"), 520);
   }
 });
 document.addEventListener("keydown", (event) => {
@@ -266,6 +272,8 @@ function setOpen(open) {
     responseResolved = false;
     responseQuestion.hidden = false;
     responseFinal.hidden = true;
+    responseResultImage.removeAttribute("src");
+    responseResultImage.alt = "";
     responseSend.disabled = false;
     responseTease.textContent = "";
     setLetterPage(0);

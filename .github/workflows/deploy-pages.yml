@@ -1,0 +1,62 @@
+name: Publicar carta
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar el proyecto
+        uses: actions/checkout@v6
+
+      - name: Preparar el sitio estatico
+        shell: bash
+        run: |
+          mkdir -p _site/app _site/assets/vendor
+          cp index.html script.js cloud-world.js three-envelope.js _site/
+          cp app/globals.css _site/app/
+          cp assets/page-turn.wav _site/assets/
+          cp assets/usagi-sticker.png _site/assets/
+          cp assets/usagi-letter-stamp-v2.png _site/assets/
+          cp assets/usagi-happy.gif _site/assets/
+          cp assets/usagi-emo.jpg _site/assets/
+          cp assets/usagi-una.mp3 _site/assets/
+          cp assets/usagi-huh.mp3 _site/assets/
+          cp assets/usagi-iyaha.mp3 _site/assets/
+          cp assets/vendor/three.module.js _site/assets/vendor/
+          cp assets/vendor/three.core.js _site/assets/vendor/
+          touch _site/.nojekyll
+
+      - name: Configurar GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Subir el sitio preparado
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Publicar
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -113,8 +113,8 @@ h1 { margin: 0; font: 500 clamp(36px, min(6vw,7vh), 66px)/.95 var(--font-display
 .response-ready .response-instruction { opacity: 1; transform: translate(-50%,0); }
 .letter-stamp-trigger { position: absolute; z-index: 26; width: clamp(76px,20vw,104px); height: clamp(76px,20vw,104px); padding: 0; border: 0; border-radius: 50%; background: transparent; opacity: 0; cursor: pointer; pointer-events: none; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
 .response-ready .letter-stamp-trigger { opacity: 1; pointer-events: auto; }
-.letter-stamp-trigger::after { content: ""; position: absolute; inset: 9%; border-radius: 50%; background: radial-gradient(circle,rgba(255,229,92,.38),rgba(255,213,43,.13) 46%,transparent 72%); box-shadow: 0 0 0 0 rgba(255,224,82,0); opacity: 0; transform: scale(.72); transition: opacity .25s, transform .25s, box-shadow .25s; }
-.letter-stamp-trigger:hover::after, .letter-stamp-trigger:focus-visible::after, .letter-stamp-trigger:active::after { opacity: 1; transform: scale(1.12); box-shadow: 0 0 34px 12px rgba(255,224,82,.32); }
+.letter-stamp-trigger::after { content: ""; position: absolute; inset: 12%; border-radius: 50%; background: radial-gradient(circle,rgba(255,229,92,.2),rgba(255,213,43,.07) 46%,transparent 72%); box-shadow: 0 0 0 0 rgba(255,224,82,0); opacity: 0; transform: scale(.78); transition: opacity .25s, transform .25s, box-shadow .25s; }
+.letter-stamp-trigger:hover::after, .letter-stamp-trigger:focus-visible::after, .letter-stamp-trigger:active::after { opacity: .78; transform: scale(1.04); box-shadow: 0 0 20px 6px rgba(255,224,82,.16); }
 .letter-stamp-trigger:focus-visible { outline: 3px solid #ffe76d; outline-offset: 4px; }
 
 body.response-open { overflow: hidden; }

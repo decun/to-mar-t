@@ -108,7 +108,7 @@ if (canvas && stage && toggle) {
     letterStamp.src = "./assets/usagi-letter-stamp-v2.png";
 
     function prepareLetterStamp() {
-      const stampColor = stampHighlighted ? "#f3c735" : "#0a1d3b";
+      const stampColor = stampHighlighted ? "#c9a638" : "#0a1d3b";
       tintedLetterStamp.width = letterStamp.naturalWidth;
       tintedLetterStamp.height = letterStamp.naturalHeight;
       const stampContext = tintedLetterStamp.getContext("2d");
@@ -239,11 +239,11 @@ if (canvas && stage && toggle) {
         letterContext.save();
         letterContext.translate(875, 620);
         letterContext.rotate(-0.085);
-        letterContext.globalAlpha = stampHighlighted ? 0.96 : 0.8;
+        letterContext.globalAlpha = stampHighlighted ? 0.88 : 0.8;
         letterContext.globalCompositeOperation = stampHighlighted ? "source-over" : "multiply";
         if (stampHighlighted) {
-          letterContext.shadowColor = "rgba(255,222,62,.88)";
-          letterContext.shadowBlur = 34;
+          letterContext.shadowColor = "rgba(255,222,62,.38)";
+          letterContext.shadowBlur = 18;
         }
         letterContext.drawImage(tintedLetterStamp, -stampSize / 2, -108, stampSize, stampSize);
         const glyphPlacements = [

@@ -143,6 +143,11 @@ if (canvas && sky && toggle) {
       }, { passive: true });
       window.addEventListener("blur", () => targetPointer.set(0, 0));
     }
+    window.addEventListener("mobile-parallax", (event) => {
+      const x = THREE.MathUtils.clamp(Number(event.detail?.x) || 0, -1, 1);
+      const y = THREE.MathUtils.clamp(Number(event.detail?.y) || 0, -1, 1);
+      targetPointer.set(x * 0.26, -y * 0.18);
+    });
 
     function resize() {
       const width = Math.max(1, window.innerWidth);

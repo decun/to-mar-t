@@ -367,6 +367,11 @@ if (canvas && stage && toggle) {
       });
       stage.addEventListener("pointerleave", () => { pointerX = 0; pointerY = 0; });
       window.addEventListener("blur", () => { pointerX = 0; pointerY = 0; });
+    } else {
+      window.addEventListener("mobile-parallax", (event) => {
+        pointerX = THREE.MathUtils.clamp(Number(event.detail?.x) || 0, -1, 1) * 0.36;
+        pointerY = THREE.MathUtils.clamp(Number(event.detail?.y) || 0, -1, 1) * 0.3;
+      });
     }
 
     function resize() {

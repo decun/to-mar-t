@@ -310,3 +310,77 @@ close.addEventListener("click", () => {
 });
 
 tapSounds.forEach((sound) => sound.load());
+
+function enableMobileParallax() {
+  const usesTouch = window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (!usesTouch || reduceMotion) return;
+
+  let permissionRequested = false;
+  let orientationActive = false;
+  let baseBeta = null;
+  let baseGamma = null;
+
+  const clamp = (value, minimum, maximum) => Math.min(maximum, Math.max(minimum, value));
+  const angleDelta = (value, baseline) => ((value - baseline + 540) % 360) - 180;
+  const emitParallax = (x, y) => {
+    window.dispatchEvent(new CustomEvent("mobile-parallax", { detail: { x, y } }));
+  };
+
+  const recalibrate = () => {
+    baseBeta = null;
+    baseGamma = null;
+    emitParallax(0, 0);
+  };
+
+  const handleOrientation = (event) => {
+    if (!Number.isFinite(event.beta) || !Number.isFinite(event.gamma)) return;
+    orientationActive = true;
+    if (baseBeta === null || baseGamma === null) {
+      baseBeta = event.beta;
+      baseGamma = event.gamma;
+      emitParallax(0, 0);
+      return;
+    }
+
+    const rawX = clamp(angleDelta(event.gamma, baseGamma) / 18, -1, 1);
+    const rawY = clamp(angleDelta(event.beta, baseBeta) / 18, -1, 1);
+    const screenAngle = ((window.screen.orientation?.angle ?? window.orientation ?? 0) + 360) % 360;
+    if (screenAngle === 90) emitParallax(-rawY, rawX);
+    else if (screenAngle === 270) emitParallax(rawY, -rawX);
+    else if (screenAngle === 180) emitParallax(-rawX, -rawY);
+    else emitParallax(rawX, rawY);
+  };
+
+  const requestOrientation = async () => {
+    if (permissionRequested) return;
+    permissionRequested = true;
+    const OrientationEvent = window.DeviceOrientationEvent;
+    if (!OrientationEvent) return;
+    try {
+      if (typeof OrientationEvent.requestPermission === "function") {
+        const permission = await OrientationEvent.requestPermission();
+        if (permission !== "granted") return;
+      }
+      window.addEventListener("deviceorientation", handleOrientation, { passive: true });
+    } catch (_) {
+      // El movimiento mediante el dedo permanece disponible como alternativa.
+    }
+  };
+
+  document.addEventListener("click", requestOrientation, { capture: true, once: true });
+  window.addEventListener("orientationchange", recalibrate, { passive: true });
+  window.addEventListener("blur", recalibrate);
+  window.addEventListener("pointermove", (event) => {
+    if (orientationActive || event.pointerType !== "touch") return;
+    emitParallax(
+      (event.clientX / Math.max(1, window.innerWidth) - 0.5) * 0.9,
+      (event.clientY / Math.max(1, window.innerHeight) - 0.5) * 0.7
+    );
+  }, { passive: true });
+  window.addEventListener("pointerup", () => {
+    if (!orientationActive) emitParallax(0, 0);
+  }, { passive: true });
+}
+
+enableMobileParallax();

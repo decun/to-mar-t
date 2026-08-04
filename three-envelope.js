@@ -324,7 +324,7 @@ if (canvas && stage && toggle) {
     letterAssembly.visible = false;
     envelopeGroup.add(letterAssembly);
 
-    const roseTexture = new THREE.TextureLoader().load("./assets/usagi-gift-sticker-clean.png");
+    const roseTexture = new THREE.TextureLoader().load("./assets/usagi-sticker.png");
     roseTexture.colorSpace = THREE.SRGBColorSpace;
     roseTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });

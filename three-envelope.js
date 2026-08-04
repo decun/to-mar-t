@@ -103,17 +103,19 @@ if (canvas && stage && toggle) {
     const letterStamp = new Image();
     const tintedLetterStamp = document.createElement("canvas");
     const stampGlyphs = ["う", "さ", "ぎ"].map(() => document.createElement("canvas"));
+    let stampHighlighted = false;
     letterStamp.decoding = "async";
     letterStamp.src = "./assets/usagi-letter-stamp-v2.png";
 
     function prepareLetterStamp() {
+      const stampColor = stampHighlighted ? "#f3c735" : "#0a1d3b";
       tintedLetterStamp.width = letterStamp.naturalWidth;
       tintedLetterStamp.height = letterStamp.naturalHeight;
       const stampContext = tintedLetterStamp.getContext("2d");
       stampContext.clearRect(0, 0, tintedLetterStamp.width, tintedLetterStamp.height);
       stampContext.drawImage(letterStamp, 0, 0);
       stampContext.globalCompositeOperation = "source-in";
-      stampContext.fillStyle = "#0a1d3b";
+      stampContext.fillStyle = stampColor;
       stampContext.fillRect(0, 0, tintedLetterStamp.width, tintedLetterStamp.height);
       stampContext.globalCompositeOperation = "source-over";
 
@@ -122,7 +124,7 @@ if (canvas && stage && toggle) {
         glyphCanvas.width = 112;
         glyphCanvas.height = 112;
         const glyphContext = glyphCanvas.getContext("2d");
-        glyphContext.fillStyle = "#0a1d3b";
+        glyphContext.fillStyle = stampColor;
         glyphContext.font = '800 82px "Yu Mincho", "Hiragino Mincho ProN", serif';
         glyphContext.textAlign = "center";
         glyphContext.textBaseline = "middle";
@@ -169,7 +171,7 @@ if (canvas && stage && toggle) {
       const paragraphs = [...(article?.querySelectorAll("p") ?? [])];
       const currentPage = Number(article?.dataset.currentPage ?? 0);
       const pageCount = Math.max(1, ...paragraphs.map((paragraph) => Number(paragraph.dataset.letterPage ?? 0) + 1));
-      const pageHeadings = [heading, "Y también quería decirte…"];
+      const pageHeadings = [heading, "También quería contarte…"];
       const messages = paragraphs
         .filter((paragraph) => !paragraph.classList.contains("signature") && Number(paragraph.dataset.letterPage ?? 0) === currentPage)
         .map((paragraph) => paragraph.textContent?.trim() ?? "")
@@ -237,8 +239,12 @@ if (canvas && stage && toggle) {
         letterContext.save();
         letterContext.translate(875, 620);
         letterContext.rotate(-0.085);
-        letterContext.globalAlpha = 0.8;
-        letterContext.globalCompositeOperation = "multiply";
+        letterContext.globalAlpha = stampHighlighted ? 0.96 : 0.8;
+        letterContext.globalCompositeOperation = stampHighlighted ? "source-over" : "multiply";
+        if (stampHighlighted) {
+          letterContext.shadowColor = "rgba(255,222,62,.88)";
+          letterContext.shadowBlur = 34;
+        }
         letterContext.drawImage(tintedLetterStamp, -stampSize / 2, -108, stampSize, stampSize);
         const glyphPlacements = [
           { x: 62, y: -78, angle: 0.28 },
@@ -265,6 +271,13 @@ if (canvas && stage && toggle) {
     }, { once: true });
     document.fonts?.ready.then(drawLetter).catch(() => {});
     stage.addEventListener("letter-page-change", drawLetter);
+    stage.addEventListener("letter-stamp-highlight", (event) => {
+      const nextHighlight = Boolean(event.detail?.active);
+      if (stampHighlighted === nextHighlight || !letterStamp.complete) return;
+      stampHighlighted = nextHighlight;
+      prepareLetterStamp();
+      drawLetter();
+    });
 
     function createLetterSegment(segmentIndex, depthOffset = 0) {
       const geometry = new THREE.PlaneGeometry(4.4, 1.1);
@@ -339,6 +352,9 @@ if (canvas && stage && toggle) {
     let arrivalStartedAt = stage.dataset.sceneReady === "true" ? performance.now() : null;
     let lastFrameAt = performance.now();
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const responseStampTrigger = document.querySelector("#response-stamp-trigger");
+    const responseInstruction = document.querySelector("#response-instruction");
+    const stampAnchor = new THREE.Vector3(1.55, -1.02, 0.04);
     toggle.addEventListener("change", () => { requestedOpen = toggle.checked; });
     stage.addEventListener("seal-tap", () => { stickerTappedAt = performance.now(); });
     stage.addEventListener("scene-ready", () => { arrivalStartedAt = performance.now(); });
@@ -462,6 +478,24 @@ if (canvas && stage && toggle) {
       envelopeGroup.rotation.y += (pointerX * 0.12 + arrivalYaw - envelopeGroup.rotation.y) * 0.075;
       envelopeGroup.rotation.x += (-pointerY * 0.055 + arrivalPitch - envelopeGroup.rotation.x) * 0.075;
       envelopeGroup.rotation.z = Math.sin(elapsed * 0.8) * 0.008 - (1 - arrivalEase) * 0.52 + arrivalFlutter * 0.14;
+
+      if (responseStampTrigger && responseInstruction) {
+        scene.updateMatrixWorld(true);
+        const projectedStamp = stampAnchor.clone();
+        letterAssembly.localToWorld(projectedStamp);
+        projectedStamp.project(camera);
+        const canvasBounds = canvas.getBoundingClientRect();
+        const stageBounds = stage.getBoundingClientRect();
+        const stampX = canvasBounds.left - stageBounds.left + (projectedStamp.x * 0.5 + 0.5) * canvasBounds.width;
+        const stampY = canvasBounds.top - stageBounds.top + (-projectedStamp.y * 0.5 + 0.5) * canvasBounds.height;
+        responseStampTrigger.style.left = `${stampX}px`;
+        responseStampTrigger.style.top = `${stampY}px`;
+        responseStampTrigger.style.transform = "translate(-50%,-50%)";
+        const instructionX = THREE.MathUtils.clamp(stampX - 42, 112, Math.max(112, stageBounds.width - 112));
+        const instructionY = THREE.MathUtils.clamp(stampY + 72, 34, Math.max(34, stageBounds.height - 28));
+        responseInstruction.style.left = `${instructionX}px`;
+        responseInstruction.style.top = `${instructionY}px`;
+      }
 
       renderer.render(scene, camera);
       requestAnimationFrame(render);

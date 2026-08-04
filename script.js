@@ -24,6 +24,16 @@ const readerPageStatus = document.querySelector("#reader-page-status");
 const readerSmaller = document.querySelector("#reader-smaller");
 const readerLarger = document.querySelector("#reader-larger");
 const readerZoomStatus = document.querySelector("#reader-zoom-status");
+const responseInstruction = document.querySelector("#response-instruction");
+const responseStampTrigger = document.querySelector("#response-stamp-trigger");
+const responseDialog = document.querySelector("#response-dialog");
+const responseClose = document.querySelector("#response-close");
+const responseQuestion = document.querySelector("#response-question");
+const responseFinal = document.querySelector("#response-final");
+const responseDate = document.querySelector("#response-date");
+const responseSend = document.querySelector("#response-send");
+const responseTease = document.querySelector("#response-tease");
+const responseDone = document.querySelector("#response-done");
 const tapProgress = [...document.querySelectorAll("#tap-progress i")];
 const tapSounds = [
   document.querySelector("#sound-una"),
@@ -37,8 +47,13 @@ let closeReadyTimer;
 let currentLetterPage = 0;
 let readerZoomIndex = 1;
 let readerOpenedFrom = null;
+let responseReadyTimer;
+let responseUnlocked = false;
+let responseOpenedFrom = null;
+let responseSendClicks = 0;
+let responseResolved = false;
 const readerZoomLevels = [1, 1.2, 1.4, 1.6];
-const readerPageHeadings = ["¡Hola, Martina!", "Y también quería decirte…"];
+const readerPageHeadings = ["¡Hola, Martina!", "También quería contarte…"];
 const letterPageCount = Math.max(1, ...[...letter.querySelectorAll("[data-letter-page]")]
   .map((element) => Number(element.dataset.letterPage) + 1));
 close.disabled = true;
@@ -86,6 +101,60 @@ function closeReader() {
   if (toggle.checked) readerOpenedFrom?.focus?.();
 }
 
+function setStampHighlight(active) {
+  stage.dispatchEvent(new CustomEvent("letter-stamp-highlight", { detail: { active } }));
+}
+
+function hideResponseInvite() {
+  window.clearTimeout(responseReadyTimer);
+  stage.classList.remove("response-ready");
+  responseInstruction.setAttribute("aria-hidden", "true");
+  responseStampTrigger.disabled = true;
+  setStampHighlight(false);
+}
+
+function showResponseInvite() {
+  if (!toggle.checked || currentLetterPage !== letterPageCount - 1) return;
+  responseUnlocked = true;
+  stage.classList.add("response-ready");
+  responseInstruction.setAttribute("aria-hidden", "false");
+  responseStampTrigger.disabled = false;
+}
+
+function updateResponseInvite() {
+  hideResponseInvite();
+  if (!toggle.checked || currentLetterPage !== letterPageCount - 1) return;
+  if (responseUnlocked) {
+    showResponseInvite();
+    return;
+  }
+  responseReadyTimer = window.setTimeout(showResponseInvite, 7000);
+}
+
+function openResponseDialog() {
+  if (responseStampTrigger.disabled || !toggle.checked) return;
+  responseOpenedFrom = document.activeElement;
+  responseDialog.hidden = false;
+  document.body.classList.add("response-open");
+  stage.setAttribute("aria-hidden", "true");
+  requestAnimationFrame(() => (responseResolved ? responseDone : responseDate).focus());
+}
+
+function closeResponseDialog() {
+  if (responseDialog.hidden) return;
+  responseDialog.hidden = true;
+  document.body.classList.remove("response-open");
+  stage.removeAttribute("aria-hidden");
+  responseOpenedFrom?.focus?.();
+}
+
+function showResponseFinal() {
+  responseResolved = true;
+  responseQuestion.hidden = true;
+  responseFinal.hidden = false;
+  requestAnimationFrame(() => responseDone.focus());
+}
+
 function setLetterPage(page) {
   currentLetterPage = Math.max(0, Math.min(letterPageCount - 1, page));
   letter.dataset.currentPage = String(currentLetterPage);
@@ -93,6 +162,7 @@ function setLetterPage(page) {
   pagePrevious.disabled = currentLetterPage === 0;
   pageNext.disabled = currentLetterPage === letterPageCount - 1;
   updateReader();
+  updateResponseInvite();
   stage.dispatchEvent(new CustomEvent("letter-page-change", { detail: { page: currentLetterPage } }));
 }
 
@@ -105,7 +175,37 @@ readerClose.addEventListener("click", closeReader);
 readerSmaller.addEventListener("click", () => { readerZoomIndex = Math.max(0, readerZoomIndex - 1); updateReaderZoom(); });
 readerLarger.addEventListener("click", () => { readerZoomIndex = Math.min(readerZoomLevels.length - 1, readerZoomIndex + 1); updateReaderZoom(); });
 letterReader.addEventListener("click", (event) => { if (event.target === letterReader) closeReader(); });
-document.addEventListener("keydown", (event) => { if (event.key === "Escape" && !letterReader.hidden) closeReader(); });
+responseStampTrigger.addEventListener("pointerenter", () => setStampHighlight(true));
+responseStampTrigger.addEventListener("pointerleave", () => setStampHighlight(false));
+responseStampTrigger.addEventListener("focus", () => setStampHighlight(true));
+responseStampTrigger.addEventListener("blur", () => setStampHighlight(false));
+responseStampTrigger.addEventListener("pointerdown", () => setStampHighlight(true));
+responseStampTrigger.addEventListener("click", openResponseDialog);
+responseClose.addEventListener("click", closeResponseDialog);
+responseDone.addEventListener("click", closeResponseDialog);
+responseDialog.addEventListener("click", (event) => { if (event.target === responseDialog) closeResponseDialog(); });
+responseDate.addEventListener("click", () => {
+  playTapSound(2);
+  showResponseFinal();
+});
+responseSend.addEventListener("click", () => {
+  playTapSound(1);
+  responseSendClicks += 1;
+  const teaseMessages = [
+    "Huh… ¿segura? (1/6)",
+    "Huh otra vez… (2/6)",
+    "Usagi sigue confundido… huh. (3/6)",
+    "¿Todavía esa opción? Huh… (4/6)",
+    "Un último huh… piénsalo bien. (5/6)"
+  ];
+  if (responseSendClicks >= 6) showResponseFinal();
+  else responseTease.textContent = teaseMessages[responseSendClicks - 1];
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key !== "Escape") return;
+  if (!responseDialog.hidden) closeResponseDialog();
+  else if (!letterReader.hidden) closeReader();
+});
 setLetterPage(0);
 updateReaderZoom();
 
@@ -151,6 +251,14 @@ function setOpen(open) {
 
   if (!open) {
     closeReader();
+    closeResponseDialog();
+    hideResponseInvite();
+    responseUnlocked = false;
+    responseSendClicks = 0;
+    responseResolved = false;
+    responseQuestion.hidden = false;
+    responseFinal.hidden = true;
+    responseTease.textContent = "";
     setLetterPage(0);
     tapCount = 0;
     openingQueued = false;

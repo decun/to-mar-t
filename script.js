@@ -140,7 +140,7 @@ function setOpen(open) {
   close.disabled = true;
   letter.setAttribute("aria-hidden", String(!open));
   title.textContent = open ? "Esta cartita es para ti" : "Tienes una carta";
-  hint.textContent = open ? "Espero que te saque una sonrisa ♡" : "Toca a Usagi 3 veces para abrirla";
+  hint.textContent = open ? "Espero que te saque una sonrisa" : "Toca a Usagi 3 veces para abrirla";
   stage.classList.toggle("is-open", open);
   close.classList.toggle("visible", open);
 
@@ -185,7 +185,7 @@ function tapUsagi() {
 
   const remaining = 3 - tapCount;
   seal.setAttribute("aria-label", remaining ? `Tocar a Usagi: faltan ${remaining} toques` : "Abriendo la carta");
-  hint.textContent = tapCount === 1 ? "Una… faltan 2 toques" : tapCount === 2 ? "¿Huh?… falta 1 toque" : "¡IYAHAAA! ♡";
+  hint.textContent = tapCount === 1 ? "Una… faltan 2 toques" : tapCount === 2 ? "¿Huh?… falta 1 toque" : "¡IYAHAAA!";
 
   if (tapCount === 3) {
     openingQueued = true;

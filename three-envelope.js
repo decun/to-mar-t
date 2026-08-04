@@ -165,7 +165,7 @@ if (canvas && stage && toggle) {
       letterContext.setTransform(letterResolution, 0, 0, letterResolution, 0, 0);
       const article = document.querySelector("#letter");
       const date = article?.querySelector(".letter-date")?.textContent ?? "un pedacito de lo que siento";
-      const heading = article?.querySelector("h2")?.textContent ?? "Hola, tú ♡";
+      const heading = article?.querySelector("h2")?.textContent ?? "Hola, tú";
       const paragraphs = [...(article?.querySelectorAll("p") ?? [])];
       const currentPage = Number(article?.dataset.currentPage ?? 0);
       const pageCount = Math.max(1, ...paragraphs.map((paragraph) => Number(paragraph.dataset.letterPage ?? 0) + 1));
@@ -301,7 +301,7 @@ if (canvas && stage && toggle) {
     letterAssembly.visible = false;
     envelopeGroup.add(letterAssembly);
 
-    const roseTexture = new THREE.TextureLoader().load("./assets/usagi-sticker.png");
+    const roseTexture = new THREE.TextureLoader().load("./assets/usagi-gift-sticker-clean.png");
     roseTexture.colorSpace = THREE.SRGBColorSpace;
     roseTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });

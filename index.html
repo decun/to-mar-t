@@ -19,7 +19,7 @@
       <div class="cloud cloud-a"></div><div class="cloud cloud-b"></div><div class="cloud cloud-c"></div>
 
       <section class="loader" id="loader" aria-live="polite">
-        <div class="loader-mark">♥</div><p>Preparando algo especial…</p>
+        <div class="loader-mark"><span class="loader-rose" aria-hidden="true"></span></div><p>Preparando algo especial…</p>
         <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
         <span id="percent">0%</span>
       </section>
@@ -35,10 +35,10 @@
           <input class="letter-toggle" id="letter-toggle" type="checkbox" aria-hidden="true" tabindex="-1" />
           <canvas id="envelope-3d" aria-hidden="true"></canvas>
           <div class="particles" aria-hidden="true">
-            <i style="left:12%;top:8%;animation-delay:0s">♥</i><i style="left:22%;top:24%;animation-delay:.18s">✦</i>
-            <i style="left:34%;top:4%;animation-delay:.35s">♥</i><i style="left:48%;top:20%;animation-delay:.08s">★</i>
-            <i style="left:60%;top:2%;animation-delay:.3s">♥</i><i style="left:72%;top:22%;animation-delay:.5s">✦</i>
-            <i style="left:84%;top:7%;animation-delay:.12s">♥</i><i style="left:92%;top:28%;animation-delay:.4s">★</i>
+            <i class="rose-particle" style="left:12%;top:8%;animation-delay:0s"><span></span></i><i style="left:22%;top:24%;animation-delay:.18s">✦</i>
+            <i class="rose-particle" style="left:34%;top:4%;animation-delay:.35s"><span></span></i><i style="left:48%;top:20%;animation-delay:.08s">★</i>
+            <i class="rose-particle" style="left:60%;top:2%;animation-delay:.3s"><span></span></i><i style="left:72%;top:22%;animation-delay:.5s">✦</i>
+            <i class="rose-particle" style="left:84%;top:7%;animation-delay:.12s"><span></span></i><i style="left:92%;top:28%;animation-delay:.4s">★</i>
           </div>
           <article class="letter" id="letter" aria-hidden="true" data-current-page="0">
             <div class="letter-rule"></div><span class="letter-date">un pedacito de lo que siento</span>
@@ -55,7 +55,7 @@
           </div>
           <button class="rose-seal" id="seal" type="button" aria-label="Tocar a Usagi: faltan 3 toques">
             <span class="seal-glow"></span>
-            <img class="rose-image" src="./assets/usagi-sticker.png" alt="" draggable="false" />
+            <img class="rose-image" src="./assets/usagi-gift-sticker-clean.png" alt="" draggable="false" />
           </button>
           <div class="tap-progress" id="tap-progress" aria-hidden="true"><i></i><i></i><i></i></div>
           <nav class="letter-pagination" id="letter-pagination" aria-label="Páginas de la carta">

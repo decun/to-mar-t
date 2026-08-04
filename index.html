@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6f78aa" />
+    <meta name="description" content="Una pequeña carta hecha con mucho cariño." />
+    <title>Una carta para ti</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./app/globals.css" />
+    <style>:root{--font-display:"Cormorant Garamond";--font-sans:"Montserrat"}</style>
+  </head>
+  <body>
+    <main class="sky">
+      <canvas id="cloud-world" aria-hidden="true"></canvas>
+      <div class="aurora aurora-one"></div><div class="aurora aurora-two"></div>
+      <div class="cloud cloud-a"></div><div class="cloud cloud-b"></div><div class="cloud cloud-c"></div>
+
+      <section class="loader" id="loader" aria-live="polite">
+        <div class="loader-mark">♥</div><p>Preparando algo especial…</p>
+        <div class="progress-track"><div class="progress-fill" id="progress"></div></div>
+        <span id="percent">0%</span>
+      </section>
+
+      <section class="scene" id="scene" aria-label="Una carta especial">
+        <div class="scene-copy">
+          <p class="eyebrow">PARA ALGUIEN ESPECIAL</p>
+          <h1 id="title">Tienes una carta</h1>
+          <p class="hint" id="hint">Toca a Usagi 3 veces para abrirla</p>
+        </div>
+
+        <div class="envelope-stage" id="stage">
+          <input class="letter-toggle" id="letter-toggle" type="checkbox" aria-hidden="true" tabindex="-1" />
+          <canvas id="envelope-3d" aria-hidden="true"></canvas>
+          <div class="particles" aria-hidden="true">
+            <i style="left:12%;top:8%;animation-delay:0s">♥</i><i style="left:22%;top:24%;animation-delay:.18s">✦</i>
+            <i style="left:34%;top:4%;animation-delay:.35s">♥</i><i style="left:48%;top:20%;animation-delay:.08s">★</i>
+            <i style="left:60%;top:2%;animation-delay:.3s">♥</i><i style="left:72%;top:22%;animation-delay:.5s">✦</i>
+            <i style="left:84%;top:7%;animation-delay:.12s">♥</i><i style="left:92%;top:28%;animation-delay:.4s">★</i>
+          </div>
+          <article class="letter" id="letter" aria-hidden="true" data-current-page="0">
+            <div class="letter-rule"></div><span class="letter-date">un pedacito de lo que siento</span>
+            <h2>Querida Martina,</h2>
+            <p data-letter-page="0">Hay muchas cosas de ti que he ido descubriendo y que admiro. Me encanta lo decidida que eres: cuando quieres hacer algo, simplemente vas y lo haces, sin esperar la validación de nadie. Esa seguridad y esa manera tan tuya de avanzar me parecen muy bonitas.</p>
+            <p data-letter-page="0">También me gusta esa ternura que a veces se te escapa sin avisar. Cuando dices algo bonito y después intentas disimularlo, como si de pronto te hubieras dado cuenta de que fuiste demasiado tierna. Quizás tú no lo notes, pero esos momentos me hacen sonreír muchísimo.</p>
+            <p data-letter-page="1">Recuerdo con mucho cariño el día que estuvimos conversando en la playa sobre nuestras metas. El sol me pegaba tan fuerte que apenas podía abrir los ojos, pero aun así me encantó estar ahí contigo, escucharte y conocerte un poquito más. También recuerdo a alguien tocando un bolero cerca de nosotros y lo nervioso que me puse. Creo que, en el fondo, una parte de mí quería que nos quedáramos un rato más mirando el mar, aunque en ese momento los nervios no me dejaran decirlo.</p>
+            <p data-letter-page="2">Desde que comenzamos a hablar más seguido, conocerte se ha convertido en algo muy bonito para mí. Tu compañía ha traído alegría y tranquilidad a mis días, y me hace feliz poder compartir contigo incluso los momentos más sencillos.</p>
+            <p data-letter-page="2">Deseo de corazón que te vaya bien en todo lo que te propongas. Que sigas avanzando con esa determinación que tanto admiro y, sobre todo, que nunca dejes de ser tú.</p>
+            <p class="signature" data-letter-page="2">Con cariño, Farid</p>
+          </article>
+          <div class="envelope">
+            <div class="envelope-back"></div><div class="envelope-flap"></div><div class="envelope-front"></div>
+          </div>
+          <button class="rose-seal" id="seal" type="button" aria-label="Tocar a Usagi: faltan 3 toques">
+            <span class="seal-glow"></span>
+            <img class="rose-image" src="./assets/usagi-sticker.png" alt="" draggable="false" />
+          </button>
+          <div class="tap-progress" id="tap-progress" aria-hidden="true"><i></i><i></i><i></i></div>
+          <nav class="letter-pagination" id="letter-pagination" aria-label="Páginas de la carta">
+            <button id="page-previous" type="button" aria-label="Página anterior">←</button>
+            <span id="page-status" aria-live="polite">1 / 3</span>
+            <button id="page-next" type="button" aria-label="Página siguiente">→</button>
+          </nav>
+          <button class="reading-zoom-trigger" id="reading-zoom-trigger" type="button" aria-label="Abrir la carta en modo de lectura ampliada">
+            <strong aria-hidden="true">A+</strong>
+          </button>
+          <button class="close-letter" id="close" type="button">cerrar la carta</button>
+        </div>
+
+        <aside class="letter-reader" id="letter-reader" role="dialog" aria-modal="true" aria-labelledby="reader-title" hidden>
+          <div class="reader-sheet" id="reader-sheet">
+            <header class="reader-toolbar">
+              <span class="reader-label">modo de lectura</span>
+              <div class="reader-size-controls" aria-label="Tamaño del texto">
+                <button id="reader-smaller" type="button" aria-label="Reducir el tamaño del texto">A−</button>
+                <span id="reader-zoom-status" aria-live="polite">120%</span>
+                <button id="reader-larger" type="button" aria-label="Aumentar el tamaño del texto">A+</button>
+              </div>
+              <button class="reader-close" id="reader-close" type="button" aria-label="Cerrar el modo de lectura">×</button>
+            </header>
+            <div class="reader-content">
+              <span class="reader-kicker">un pedacito de lo que siento</span>
+              <h2 id="reader-title">Querida Martina,</h2>
+              <div id="reader-body"></div>
+            </div>
+            <nav class="reader-pagination" aria-label="Páginas de la carta ampliada">
+              <button id="reader-previous" type="button" aria-label="Página anterior">←</button>
+              <span id="reader-page-status" aria-live="polite">1 / 3</span>
+              <button id="reader-next" type="button" aria-label="Página siguiente">→</button>
+            </nav>
+          </div>
+        </aside>
+      </section>
+    </main>
+    <audio id="sound-una" src="./assets/usagi-una.mp3" preload="auto"></audio>
+    <audio id="sound-huh" src="./assets/usagi-huh.mp3" preload="auto"></audio>
+    <audio id="sound-iyaha" src="./assets/usagi-iyaha.mp3" preload="auto"></audio>
+    <script src="./script.js"></script>
+    <script type="module" src="./cloud-world.js"></script>
+    <script type="module" src="./three-envelope.js"></script>
+  </body>
+</html>

@@ -171,7 +171,7 @@ if (canvas && stage && toggle) {
       const paragraphs = [...(article?.querySelectorAll("p") ?? [])];
       const currentPage = Number(article?.dataset.currentPage ?? 0);
       const pageCount = Math.max(1, ...paragraphs.map((paragraph) => Number(paragraph.dataset.letterPage ?? 0) + 1));
-      const pageHeadings = [heading, "También quería contarte…"];
+      const pageHeadings = [heading, "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…"];
       const messages = paragraphs
         .filter((paragraph) => !paragraph.classList.contains("signature") && Number(paragraph.dataset.letterPage ?? 0) === currentPage)
         .map((paragraph) => paragraph.textContent?.trim() ?? "")

@@ -6,6 +6,7 @@ const toggle = document.querySelector("#letter-toggle");
 
 if (canvas && stage && toggle) {
   try {
+    let activeLetterModel = stage.letterModelDetail ?? {};
     const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance" });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -84,8 +85,9 @@ if (canvas && stage && toggle) {
     const flapPivot = new THREE.Group();
     flapPivot.position.set(0, 1.54, 0.19);
     envelopeGroup.add(flapPivot);
+    const flapInnerMaterial = new THREE.MeshStandardMaterial({ color: 0xcdb89a, roughness: 1, side: THREE.DoubleSide });
     flapPivot.add(shapeMesh([[-2.72, 0], [2.72, 0], [0, -1.78]], paperLight, 0));
-    flapPivot.add(shapeMesh([[-2.58, -0.01], [2.58, -0.01], [0, -1.66]], new THREE.MeshStandardMaterial({ color: 0xcdb89a, roughness: 1, side: THREE.DoubleSide }), -0.012));
+    flapPivot.add(shapeMesh([[-2.58, -0.01], [2.58, -0.01], [0, -1.66]], flapInnerMaterial, -0.012));
 
     const letterCanvas = document.createElement("canvas");
     const letterWidth = 1024;
@@ -104,23 +106,34 @@ if (canvas && stage && toggle) {
     const tintedLetterStamp = document.createElement("canvas");
     const stampGlyphs = ["う", "さ", "ぎ"].map(() => document.createElement("canvas"));
     let stampHighlighted = false;
+    let currentLetterStampSrc = activeLetterModel.letter?.stampSrc ?? "./assets/usagi-letter-stamp-v2.png";
     letterStamp.decoding = "async";
-    letterStamp.src = "./assets/usagi-letter-stamp-v2.png";
 
     function prepareLetterStamp() {
-      const stampColor = stampHighlighted ? "#c9a638" : "#0a1d3b";
+      if (!letterStamp.naturalWidth) return;
+      const letterPalette = activeLetterModel.letter ?? {};
+      const stampColor = stampHighlighted
+        ? letterPalette.stampHighlightInk ?? "#c9a638"
+        : letterPalette.stampColor ?? "#0a1d3b";
       tintedLetterStamp.width = letterStamp.naturalWidth;
       tintedLetterStamp.height = letterStamp.naturalHeight;
       const stampContext = tintedLetterStamp.getContext("2d");
       stampContext.clearRect(0, 0, tintedLetterStamp.width, tintedLetterStamp.height);
       stampContext.drawImage(letterStamp, 0, 0);
-      stampContext.globalCompositeOperation = "source-in";
-      stampContext.fillStyle = stampColor;
-      stampContext.fillRect(0, 0, tintedLetterStamp.width, tintedLetterStamp.height);
-      stampContext.globalCompositeOperation = "source-over";
+      if (letterPalette.stampTint !== false) {
+        stampContext.globalCompositeOperation = "source-in";
+        stampContext.fillStyle = stampColor;
+        stampContext.fillRect(0, 0, tintedLetterStamp.width, tintedLetterStamp.height);
+        stampContext.globalCompositeOperation = "source-over";
+      }
 
       ["う", "さ", "ぎ"].forEach((character, glyphIndex) => {
         const glyphCanvas = stampGlyphs[glyphIndex];
+        if (letterPalette.stampGlyphs === false) {
+          glyphCanvas.width = 1;
+          glyphCanvas.height = 1;
+          return;
+        }
         glyphCanvas.width = 112;
         glyphCanvas.height = 112;
         const glyphContext = glyphCanvas.getContext("2d");
@@ -171,7 +184,8 @@ if (canvas && stage && toggle) {
       const paragraphs = [...(article?.querySelectorAll("p") ?? [])];
       const currentPage = Number(article?.dataset.currentPage ?? 0);
       const pageCount = Math.max(1, ...paragraphs.map((paragraph) => Number(paragraph.dataset.letterPage ?? 0) + 1));
-      const pageHeadings = [heading, "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…", "Y una última opción…"];
+      const pageHeadings = activeLetterModel.pageHeadings ?? [heading];
+      const letterPalette = activeLetterModel.letter ?? {};
       const messages = paragraphs
         .filter((paragraph) => !paragraph.classList.contains("signature") && Number(paragraph.dataset.letterPage ?? 0) === currentPage)
         .map((paragraph) => paragraph.textContent?.trim() ?? "")
@@ -179,22 +193,22 @@ if (canvas && stage && toggle) {
       const signatureElement = article?.querySelector(".signature");
       const signature = Number(signatureElement?.dataset.letterPage ?? -1) === currentPage ? signatureElement?.textContent ?? "" : "";
       const paperGradient = letterContext.createLinearGradient(0, 0, 0, letterHeight);
-      paperGradient.addColorStop(0, "#eefaff");
-      paperGradient.addColorStop(1, "#c7e6f5");
+      paperGradient.addColorStop(0, letterPalette.top ?? "#eefaff");
+      paperGradient.addColorStop(1, letterPalette.bottom ?? "#c7e6f5");
       letterContext.clearRect(0, 0, letterWidth, letterHeight);
       letterContext.fillStyle = paperGradient;
       letterContext.fillRect(0, 0, letterWidth, letterHeight);
-      letterContext.strokeStyle = "rgba(61,111,146,.28)";
+      letterContext.strokeStyle = letterPalette.border ?? "rgba(61,111,146,.28)";
       letterContext.lineWidth = 3;
       letterContext.strokeRect(28, 28, letterWidth - 56, letterHeight - 56);
-      letterContext.fillStyle = "#d58b92";
+      letterContext.fillStyle = letterPalette.accent ?? "#d58b92";
       letterContext.fillRect(92, 82, 92, 4);
-      letterContext.fillStyle = "rgba(23,58,90,.72)";
+      letterContext.fillStyle = letterPalette.meta ?? "rgba(23,58,90,.72)";
       letterContext.font = '500 19px "Montserrat", Arial, sans-serif';
       letterContext.letterSpacing = "3px";
       letterContext.fillText(`${date.toUpperCase()}  ·  ${currentPage + 1} DE ${pageCount}`, 92, 140);
       letterContext.letterSpacing = "0px";
-      letterContext.fillStyle = "#173a5a";
+      letterContext.fillStyle = letterPalette.ink ?? "#173a5a";
       letterContext.font = '600 50px "Cormorant Garamond", Georgia, serif';
       letterContext.fillText(pageHeadings[currentPage] ?? heading, 72, 202);
 
@@ -229,7 +243,7 @@ if (canvas && stage && toggle) {
       }
       wrappedParagraphs = messages.map((message) => getWrappedLetterLines(message, textWidth));
 
-      letterContext.fillStyle = "#173a5a";
+      letterContext.fillStyle = letterPalette.ink ?? "#173a5a";
       letterContext.font = `500 ${bodyFontSize}px "Cormorant Garamond", Georgia, serif`;
       let cursorY = textTop;
       wrappedParagraphs.forEach((lines, index) => {
@@ -240,19 +254,21 @@ if (canvas && stage && toggle) {
         if (index < wrappedParagraphs.length - 1) cursorY += paragraphGap;
       });
 
-      letterContext.fillStyle = "#6f5878";
+      letterContext.fillStyle = letterPalette.signature ?? "#6f5878";
       letterContext.font = `italic ${Math.max(23, bodyFontSize + 2)}px "Cormorant Garamond", Georgia, serif`;
       letterContext.fillText(signature, textX, Math.min(cursorY + 12, 714));
 
-      if (currentPage === pageCount - 1 && tintedLetterStamp.width) {
-        const stampSize = 190;
+      if (letterPalette.showStamp !== false && currentPage === pageCount - 1 && tintedLetterStamp.width) {
+        const stampSize = letterPalette.stampSize ?? 190;
         letterContext.save();
         letterContext.translate(875, 620);
         letterContext.rotate(-0.085);
         letterContext.globalAlpha = stampHighlighted ? 0.88 : 0.8;
-        letterContext.globalCompositeOperation = stampHighlighted ? "source-over" : "multiply";
+        letterContext.globalCompositeOperation = stampHighlighted
+          ? "source-over"
+          : letterPalette.stampComposite ?? "multiply";
         if (stampHighlighted) {
-          letterContext.shadowColor = "rgba(255,222,62,.38)";
+          letterContext.shadowColor = letterPalette.stampHighlightColor ?? "rgba(255,222,62,.38)";
           letterContext.shadowBlur = 18;
         }
         letterContext.drawImage(tintedLetterStamp, -stampSize / 2, -108, stampSize, stampSize);
@@ -261,24 +277,27 @@ if (canvas && stage && toggle) {
           { x: 88, y: -48, angle: 0.58 },
           { x: 101, y: -9, angle: 0.92 }
         ];
-        stampGlyphs.forEach((glyphCanvas, glyphIndex) => {
-          const placement = glyphPlacements[glyphIndex];
-          letterContext.save();
-          letterContext.translate(placement.x, placement.y);
-          letterContext.rotate(placement.angle);
-          letterContext.drawImage(glyphCanvas, -14, -14, 28, 28);
-          letterContext.restore();
-        });
+        if (letterPalette.stampGlyphs !== false) {
+          stampGlyphs.forEach((glyphCanvas, glyphIndex) => {
+            const placement = glyphPlacements[glyphIndex];
+            letterContext.save();
+            letterContext.translate(placement.x, placement.y);
+            letterContext.rotate(placement.angle);
+            letterContext.drawImage(glyphCanvas, -14, -14, 28, 28);
+            letterContext.restore();
+          });
+        }
         letterContext.restore();
       }
       letterTexture.needsUpdate = true;
     }
 
-    drawLetter();
     letterStamp.addEventListener("load", () => {
       prepareLetterStamp();
       drawLetter();
-    }, { once: true });
+    });
+    letterStamp.src = currentLetterStampSrc;
+    drawLetter();
     document.fonts?.ready.then(drawLetter).catch(() => {});
     stage.addEventListener("letter-page-change", drawLetter);
     stage.addEventListener("letter-stamp-highlight", (event) => {
@@ -324,7 +343,10 @@ if (canvas && stage && toggle) {
     letterAssembly.visible = false;
     envelopeGroup.add(letterAssembly);
 
-    const roseTexture = new THREE.TextureLoader().load("./assets/usagi-sticker.png");
+    const textureLoader = new THREE.TextureLoader();
+    let currentSealSrc = activeLetterModel.sealSrc ?? "./assets/usagi-sticker.png";
+    let activeSealScale = activeLetterModel.sealScale ?? 1;
+    let roseTexture = textureLoader.load(currentSealSrc);
     roseTexture.colorSpace = THREE.SRGBColorSpace;
     roseTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
     const roseMaterial = new THREE.MeshBasicMaterial({ map: roseTexture, transparent: true, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
@@ -333,6 +355,42 @@ if (canvas && stage && toggle) {
     const roseSeal = new THREE.Mesh(roseGeometry, roseMaterial);
     roseSeal.position.set(0, -0.08, 0.27);
     envelopeGroup.add(roseSeal);
+
+    function applyLetterModel(model = {}) {
+      activeLetterModel = model;
+      activeSealScale = Number(model.sealScale) || 1;
+      const envelopePalette = model.envelope ?? {};
+      paperMaterial.color.set(envelopePalette.paper ?? "#f1e4cc");
+      paperLight.color.set(envelopePalette.light ?? "#fff2dc");
+      paperShade.color.set(envelopePalette.shade ?? "#d7c3a4");
+      flapInnerMaterial.color.set(envelopePalette.inner ?? "#cdb89a");
+      foldEdgeMaterial.color.set(envelopePalette.edge ?? "#b8a184");
+
+      const nextSealSrc = model.sealSrc ?? "./assets/usagi-sticker.png";
+      if (nextSealSrc !== currentSealSrc) {
+        currentSealSrc = nextSealSrc;
+        textureLoader.load(nextSealSrc, (nextTexture) => {
+          nextTexture.colorSpace = THREE.SRGBColorSpace;
+          nextTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+          const previousTexture = roseMaterial.map;
+          roseMaterial.map = nextTexture;
+          roseMaterial.needsUpdate = true;
+          roseTexture = nextTexture;
+          previousTexture?.dispose();
+        });
+      }
+      const nextLetterStampSrc = model.letter?.stampSrc ?? "./assets/usagi-letter-stamp-v2.png";
+      if (nextLetterStampSrc !== currentLetterStampSrc) {
+        currentLetterStampSrc = nextLetterStampSrc;
+        letterStamp.src = nextLetterStampSrc;
+      } else {
+        prepareLetterStamp();
+        drawLetter();
+      }
+    }
+
+    applyLetterModel(activeLetterModel);
+    stage.addEventListener("letter-model-change", (event) => applyLetterModel(event.detail ?? {}));
 
     stage.classList.add("webgl-ready");
 
@@ -480,7 +538,7 @@ if (canvas && stage && toggle) {
       roseSeal.rotation.y = -stickerDetach * 0.14;
       roseMaterial.opacity = stickerOpacity;
       roseSeal.visible = stickerOpacity > 0.01;
-      roseSeal.scale.setScalar(1 - stickerDetach * 0.08 + Math.sin(stickerPeel * Math.PI) * 0.025 + tapBounce * 0.13);
+      roseSeal.scale.setScalar((1 - stickerDetach * 0.08 + Math.sin(stickerPeel * Math.PI) * 0.025 + tapBounce * 0.13) * activeSealScale);
       const landingShadow = smoothstep(0.48, 1, arrivalProgress);
       softShadow.material.opacity = Math.max(0, 1 - flapAmount * 1.35) * landingShadow;
       softShadow.visible = flapAmount < 0.76;

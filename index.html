@@ -4,8 +4,22 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#6f78aa" />
-    <meta name="description" content="Una pequeña carta hecha con mucho cariño." />
-    <title>Una carta para ti</title>
+    <meta name="description" content="Cada fecha guarda algo distinto ♡" />
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_CL" />
+    <meta property="og:title" content="Archivo de cartas" />
+    <meta property="og:description" content="Cada fecha guarda algo distinto ♡" />
+    <meta property="og:url" content="https://decun.github.io/to-mar/" />
+    <meta property="og:image" content="https://decun.github.io/to-mar/assets/share-preview.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="217" />
+    <meta property="og:image:height" content="174" />
+    <meta property="og:image:alt" content="Dos personajes con gorros rojos en una escena de videojuego" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Archivo de cartas" />
+    <meta name="twitter:description" content="Cada fecha guarda algo distinto ♡" />
+    <meta name="twitter:image" content="https://decun.github.io/to-mar/assets/share-preview.png" />
+    <title>Archivo de cartas</title>
     <link rel="icon" href="./favicon.ico" sizes="any" />
     <link rel="icon" type="image/png" sizes="64x64" href="./assets/favicon-usagi.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png" />
@@ -29,12 +43,32 @@
 
       <section class="scene" id="scene" aria-label="Una carta especial">
         <div class="scene-copy">
-          <p class="eyebrow">PARA MARTINA</p>
+          <p class="eyebrow" id="letter-eyebrow">PARA MARTINA</p>
           <h1 id="title">Tienes una carta</h1>
           <p class="hint" id="hint">Toca a Usagi 3 veces para abrirla</p>
         </div>
 
-        <div class="envelope-stage" id="stage">
+        <div class="letter-archive" id="letter-archive">
+          <button class="letter-archive-toggle" id="letter-date-toggle" type="button" aria-haspopup="listbox" aria-expanded="false" aria-controls="letter-date-list">
+            <span class="archive-label">archivo de cartas</span>
+            <strong id="selected-letter-date">ELIGE UNA FECHA</strong>
+            <span class="archive-chevron" aria-hidden="true">⌄</span>
+          </button>
+          <div class="letter-date-list" id="letter-date-list" role="listbox" aria-label="Elegir la fecha de la carta" hidden>
+            <button class="letter-date-option" type="button" role="option" data-letter-model="2026-08-09" aria-selected="false">
+              <span class="date-day">09</span>
+              <span class="date-copy"><strong>agosto 2026</strong><small>Un pedacito de lo que siento</small></span>
+              <span class="date-dot" aria-hidden="true"></span>
+            </button>
+            <button class="letter-date-option" type="button" role="option" data-letter-model="2026-08-04" aria-selected="false">
+              <span class="date-day">04</span>
+              <span class="date-copy"><strong>agosto 2026</strong><small>Cumpleaños y cierto regalo</small></span>
+              <span class="date-dot" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="envelope-stage" id="stage" aria-hidden="true">
           <input class="letter-toggle" id="letter-toggle" type="checkbox" aria-hidden="true" tabindex="-1" />
           <canvas id="envelope-3d" aria-hidden="true"></canvas>
           <p class="response-instruction" id="response-instruction" role="status" aria-live="polite" aria-hidden="true">
@@ -48,8 +82,8 @@
             <i class="rose-particle" style="left:84%;top:7%;animation-delay:.12s">🌹</i><i style="left:92%;top:28%;animation-delay:.4s">★</i>
           </div>
           <article class="letter" id="letter" aria-hidden="true" data-current-page="0">
-            <div class="letter-rule"></div><span class="letter-date">una cartita para ti</span>
-            <h2>Estimada Martina:</h2>
+            <div class="letter-rule"></div><span class="letter-date" id="letter-date">una cartita para ti</span>
+            <h2 id="letter-heading">Estimada Martina:</h2>
             <p data-letter-page="0">Le escribo esta carta, formalmente, para pedirle disculpas por cómo actué ante la situación acontecida el pasado mes de junio. Sé que ya le he pedido disculpas varias veces; simplemente sentía que todavía necesitaba expresar esto con calma.</p>
             <p data-letter-page="0">Dicho esto, surgió otro problema que me acongojaba el corazón, porque no me gusta dejar pasar este tipo de fechas.</p>
             <p data-letter-page="1">Para el 29 de junio estaba demasiado enredado como para escribir algo de manera congruente. Aun así, no quería dejar que siguiera pasando más tiempo sin desearle un feliz cumpleaños; que cumpla muchos más, que se cumplan todos sus deseos y todoooo.</p>
@@ -89,7 +123,7 @@
               <button class="reader-close" id="reader-close" type="button" aria-label="Cerrar el modo de lectura">×</button>
             </header>
             <div class="reader-content">
-              <span class="reader-kicker">una cartita para ti</span>
+              <span class="reader-kicker" id="reader-kicker">una cartita para ti</span>
               <h2 id="reader-title">Estimada Martina:</h2>
               <div id="reader-body"></div>
             </div>
@@ -115,12 +149,12 @@
               <p class="response-tease" id="response-tease" aria-live="polite"></p>
             </div>
             <div class="response-final" id="response-final" hidden>
-              <span class="response-kicker">tenemos un plan</span>
+              <span class="response-kicker" id="response-result-kicker">tenemos un plan</span>
               <h2 id="response-result-title">Okk ♡</h2>
               <div class="response-result-media">
                 <img id="response-result-image" alt="" />
               </div>
-              <p>Respuesta enviada ♡</p>
+              <p id="response-result-copy">Respuesta enviada ♡</p>
               <button class="response-done" id="response-done" type="button">Listo</button>
             </div>
           </div>
@@ -133,6 +167,5 @@
     <audio id="sound-page-turn" src="./assets/page-turn.wav" preload="auto"></audio>
     <script src="./script.js"></script>
     <script type="module" src="./cloud-world.js"></script>
-    <script type="module" src="./three-envelope.js"></script>
   </body>
 </html>

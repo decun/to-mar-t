@@ -6,8 +6,17 @@ const stage = document.querySelector("#stage");
 const toggle = document.querySelector("#letter-toggle");
 const title = document.querySelector("#title");
 const hint = document.querySelector("#hint");
+const letterEyebrow = document.querySelector("#letter-eyebrow");
+const letterArchive = document.querySelector("#letter-archive");
+const letterDateToggle = document.querySelector("#letter-date-toggle");
+const letterDateList = document.querySelector("#letter-date-list");
+const selectedLetterDate = document.querySelector("#selected-letter-date");
+const letterDateOptions = [...document.querySelectorAll("[data-letter-model]")];
 const letter = document.querySelector("#letter");
+const letterDate = document.querySelector("#letter-date");
+const letterHeading = document.querySelector("#letter-heading");
 const seal = document.querySelector("#seal");
+const sealImage = seal.querySelector(".rose-image");
 const close = document.querySelector("#close");
 const pagePrevious = document.querySelector("#page-previous");
 const pageNext = document.querySelector("#page-next");
@@ -15,6 +24,7 @@ const pageStatus = document.querySelector("#page-status");
 const readingZoomTrigger = document.querySelector("#reading-zoom-trigger");
 const letterReader = document.querySelector("#letter-reader");
 const readerSheet = document.querySelector("#reader-sheet");
+const readerKicker = document.querySelector("#reader-kicker");
 const readerTitle = document.querySelector("#reader-title");
 const readerBody = document.querySelector("#reader-body");
 const readerClose = document.querySelector("#reader-close");
@@ -30,23 +40,160 @@ const responseDialog = document.querySelector("#response-dialog");
 const responseClose = document.querySelector("#response-close");
 const responseQuestion = document.querySelector("#response-question");
 const responseFinal = document.querySelector("#response-final");
+const responseResultKicker = document.querySelector("#response-result-kicker");
 const responseResultTitle = document.querySelector("#response-result-title");
 const responseResultImage = document.querySelector("#response-result-image");
+const responseResultCopy = document.querySelector("#response-result-copy");
 const responseDate = document.querySelector("#response-date");
 const responseSend = document.querySelector("#response-send");
 const responseTease = document.querySelector("#response-tease");
 const responseDone = document.querySelector("#response-done");
 const pageTurnSound = document.querySelector("#sound-page-turn");
 const tapProgress = [...document.querySelectorAll("#tap-progress i")];
+const particles = [...document.querySelectorAll(".particles i")];
 const tapSounds = [
   document.querySelector("#sound-una"),
   document.querySelector("#sound-huh"),
   document.querySelector("#sound-iyaha")
 ];
+const letterModels = {
+  "2026-08-09": {
+    route: "09-08-2026",
+    dateLabel: "09 AGO 2026",
+    eyebrow: "PARA MARTINA · 09/08/2026",
+    letterDate: "09/08/2026",
+    headings: ["Querida Martina,", "Aquel día en la playa,", "Y algo que quiero decirte,"],
+    pages: [
+      [
+        "Hay muchas cosas de ti que he ido descubriendo y que admiro. Me encanta lo decidida que eres: cuando quieres hacer algo, simplemente vas y lo haces, sin esperar la validación de nadie. Esa seguridad y esa manera tan tuya de avanzar me parecen muy bonitas.",
+        "También me gusta esa ternura que a veces se te escapa sin avisar. Cuando dices algo bonito y después intentas disimularlo, como si de pronto te hubieras dado cuenta de que fuiste demasiado tierna. Quizás tú no lo notes, pero esos momentos me hacen sonreír muchísimo."
+      ],
+      [
+        "Recuerdo con mucho cariño el día que estuvimos conversando en la playa sobre nuestras metas. El sol me pegaba tan fuerte que apenas podía abrir los ojos, pero aun así me encantó estar ahí contigo, escucharte y conocerte un poquito más. También recuerdo a alguien tocando un bolero cerca de nosotros y lo nervioso que me puse. Creo que, en el fondo, una parte de mí quería que nos quedáramos un rato más mirando el mar, aunque en ese momento los nervios no me dejaran decirlo."
+      ],
+      [
+        "Desde que comenzamos a hablar más seguido, conocerte se ha convertido en algo muy bonito para mí. Tu compañía ha traído alegría y tranquilidad a mis días, y me hace feliz poder compartir contigo incluso los momentos más sencillos.",
+        "Deseo de corazón que te vaya bien en todo lo que te propongas. Que sigas avanzando con esa determinación que tanto admiro y, sobre todo, que nunca dejes de ser tú.",
+        { text: "Con cariño, Farid", signature: true }
+      ]
+    ],
+    openTitle: "Día de exploración",
+    openHint: "Espero que te saque una sonrisa",
+    tapCountRequired: 1,
+    tapSoundSequence: [2],
+    tapHints: ["¡IYAHAAA!"],
+    particles: ["♥", "✦", "♡", "★", "♥", "✦", "♡", "★"],
+    responseEnabled: false,
+    interaction: {
+      type: "reveal",
+      delay: 5000,
+      instruction: "Presiona el sello de la rosa",
+      ariaLabel: "Abrir la sorpresa del sello de la rosa",
+      kicker: "",
+      title: "Sorpresa",
+      copy: "",
+      image: "./assets/kitten-rose.png",
+      imageAlt: "Un gatito blanco sosteniendo una rosa"
+    },
+    visual: {
+      theme: "heart",
+      sealSrc: "./assets/usagi-heart-sticker.png",
+      sealScale: 0.94,
+      envelope: {
+        paper: "#9fdcf2",
+        light: "#d8f4ff",
+        shade: "#70b9d7",
+        inner: "#5d9fbd",
+        edge: "#3d7898"
+      },
+      letter: {
+        top: "#ca465b",
+        bottom: "#8e2035",
+        border: "rgba(255,235,225,.38)",
+        accent: "#ffd0c7",
+        meta: "rgba(255,246,235,.72)",
+        ink: "#fff6eb",
+        signature: "#ffd3dc",
+        showStamp: true,
+        stampSrc: "./assets/rose-letter-stamp.png",
+        stampTint: false,
+        stampGlyphs: false,
+        stampComposite: "source-over",
+        stampSize: 180,
+        stampHighlightColor: "rgba(255,239,151,.54)"
+      }
+    }
+  },
+  "2026-08-04": {
+    route: "04-08-2026",
+    dateLabel: "04 AGO 2026",
+    eyebrow: "PARA MARTINA · 04/08/2026",
+    letterDate: "una cartita para ti · 04/08/2026",
+    headings: ["Estimada Martina:", "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…", "Y una última opción…"],
+    pages: [
+      [
+        "Le escribo esta carta, formalmente, para pedirle disculpas por cómo actué ante la situación acontecida el pasado mes de junio. Sé que ya le he pedido disculpas varias veces; simplemente sentía que todavía necesitaba expresar esto con calma.",
+        "Dicho esto, surgió otro problema que me acongojaba el corazón, porque no me gusta dejar pasar este tipo de fechas."
+      ],
+      [
+        "Para el 29 de junio estaba demasiado enredado como para escribir algo de manera congruente. Aun así, no quería dejar que siguiera pasando más tiempo sin desearle un feliz cumpleaños; que cumpla muchos más, que se cumplan todos sus deseos y todoooo."
+      ],
+      [
+        "También quería contarle que, desde que me dijo cuándo era su cumpleaños, empecé a planear su regalo. Por lo mismo, lo tengo guardado desde hace un rato y, como tampoco quiero condicionarla con él, me gustaría saber cómo prefiere recibirlo: por alguna aplicación como Uber o DiDi, mediante drones, teletransportación o el método que le acomode más."
+      ],
+      [
+        "Por otro lado, está la opción de que nos juntemos y usemos esto como excusa para celebrar su cumpleaños y que pasó todos sus ramos, jeje. Felicitaciones, por cierto; espero que le vaya muy bien este semestre.",
+        "Y ahora sí: atenta al Usagi de aquí abajo.",
+        { text: "Con cariño, Farid", signature: true }
+      ]
+    ],
+    openTitle: "Esta cartita es para ti",
+    openHint: "Espero que te saque una sonrisa",
+    tapCountRequired: 3,
+    tapSoundSequence: [0, 1, 2],
+    tapHints: ["Una… faltan 2 toques", "¿Huh?… falta 1 toque", "¡IYAHAAA!"],
+    particles: ["🌹", "✦", "🌹", "★", "🌹", "✦", "🌹", "★"],
+    responseEnabled: true,
+    interaction: {
+      type: "response",
+      delay: 7000,
+      instruction: "Presiona el sello de Usagi para responder",
+      ariaLabel: "Responder usando el sello de Usagi"
+    },
+    visual: {
+      theme: "classic",
+      sealSrc: "./assets/usagi-sticker.png",
+      sealScale: 1,
+      envelope: {
+        paper: "#f1e4cc",
+        light: "#fff2dc",
+        shade: "#d7c3a4",
+        inner: "#cdb89a",
+        edge: "#b8a184"
+      },
+      letter: {
+        top: "#eefaff",
+        bottom: "#c7e6f5",
+        border: "rgba(61,111,146,.28)",
+        accent: "#d58b92",
+        meta: "rgba(23,58,90,.72)",
+        ink: "#173a5a",
+        signature: "#6f5878",
+        showStamp: true,
+        stampSrc: "./assets/usagi-letter-stamp-v2.png",
+        stampTint: true,
+        stampGlyphs: true,
+        stampComposite: "multiply"
+      }
+    }
+  }
+};
 let tapCount = 0;
 let tapLocked = false;
 let openingQueued = false;
 let closeReadyTimer;
+let arrivalReadyTimer;
+let arrivalEndTimer;
 let currentLetterPage = 0;
 let readerZoomIndex = 1;
 let readerOpenedFrom = null;
@@ -56,12 +203,209 @@ let responseOpenedFrom = null;
 let responseSendClicks = 0;
 let responseResolved = false;
 let responseSubmitting = false;
+let activeLetterModelId = null;
+let activeLetterModel = null;
+let envelopeModulePromise = null;
+let hasSelectedLetter = false;
 const responseEndpoint = "https://formspree.io/f/xbgrreow";
 const readerZoomLevels = [1, 1.2, 1.4, 1.6];
-const readerPageHeadings = ["Estimada Martina:", "¡Feliz cumpleaños atrasado! D:", "Sobre cierto regalo…", "Y una última opción…"];
-const letterPageCount = Math.max(1, ...[...letter.querySelectorAll("[data-letter-page]")]
-  .map((element) => Number(element.dataset.letterPage) + 1));
+let readerPageHeadings = [];
+let letterPageCount = 1;
 close.disabled = true;
+
+function setLetterArchiveOpen(open) {
+  const nextOpen = Boolean(open) && !letterDateToggle.disabled;
+  letterArchive.classList.toggle("is-open", nextOpen);
+  letterDateToggle.setAttribute("aria-expanded", String(nextOpen));
+  letterDateList.hidden = !nextOpen;
+}
+
+function getLetterModelFromRoute() {
+  const route = window.location.hash.replace(/^#\/?/, "").trim();
+  return Object.entries(letterModels).find(([, model]) => model.route === route)?.[0] ?? null;
+}
+
+function updateLetterRoute(model) {
+  try {
+    const url = new URL(window.location.href);
+    url.search = "";
+    url.hash = `/${model.route}`;
+    window.history.replaceState({}, "", url);
+  } catch (_) {
+    // La carta sigue funcionando aunque el navegador local no permita editar la dirección.
+  }
+}
+
+function showLetterArchive() {
+  scene.classList.remove("has-letter");
+  scene.classList.add("is-choosing-letter");
+  letterArchive.classList.add("is-choosing");
+  stage.setAttribute("aria-hidden", "true");
+  letterEyebrow.textContent = "ARCHIVO PARA MARTINA";
+  title.textContent = "Elige una carta";
+  hint.textContent = "Cada fecha guarda algo distinto";
+  selectedLetterDate.textContent = "ELIGE UNA FECHA";
+  letterDateOptions.forEach((option) => option.setAttribute("aria-selected", "false"));
+  setLetterArchiveOpen(true);
+}
+
+function resetResponseState() {
+  closeResponseDialog();
+  hideResponseInvite();
+  responseUnlocked = false;
+  responseSendClicks = 0;
+  responseResolved = false;
+  responseSubmitting = false;
+  responseQuestion.hidden = false;
+  responseFinal.hidden = true;
+  responseDialog.classList.remove("is-reveal");
+  responseDialog.setAttribute("aria-labelledby", "response-title");
+  responseDialog.removeAttribute("aria-label");
+  responseDialog.removeAttribute("tabindex");
+  responseClose.setAttribute("aria-label", "Cerrar la pregunta");
+  responseResultKicker.textContent = "tenemos un plan";
+  responseResultCopy.textContent = "Respuesta enviada ♡";
+  responseDate.disabled = false;
+  responseResultImage.removeAttribute("src");
+  responseResultImage.alt = "";
+  responseSend.disabled = false;
+  responseTease.textContent = "";
+}
+
+function getTapRequirement() {
+  return activeLetterModel?.tapCountRequired ?? 3;
+}
+
+function getClosedHint() {
+  const requiredTaps = getTapRequirement();
+  return requiredTaps === 1 ? "Toca el sello para abrirla" : `Toca a Usagi ${requiredTaps} veces para abrirla`;
+}
+
+function updateTapInterface() {
+  const requiredTaps = getTapRequirement();
+  tapProgress.forEach((dot, index) => {
+    dot.hidden = index >= requiredTaps;
+    dot.classList.toggle("is-filled", index < tapCount);
+  });
+  stage.dataset.tapRequirement = String(requiredTaps);
+  seal.setAttribute("aria-label", requiredTaps === 1
+    ? "Abrir la carta"
+    : `Tocar a Usagi: faltan ${Math.max(0, requiredTaps - tapCount)} toques`);
+}
+
+function applyParticles(model) {
+  const symbols = model.particles ?? ["🌹", "✦", "🌹", "★", "🌹", "✦", "🌹", "★"];
+  particles.forEach((particle, index) => {
+    const symbol = symbols[index % symbols.length];
+    particle.textContent = symbol;
+    particle.classList.toggle("rose-particle", symbol === "🌹");
+    particle.classList.toggle("heart-particle", symbol === "♥" || symbol === "♡");
+  });
+}
+
+function ensureEnvelopeModule() {
+  if (!envelopeModulePromise) envelopeModulePromise = import("./three-envelope.js");
+  return envelopeModulePromise;
+}
+
+function startLetterArrival() {
+  window.clearTimeout(arrivalReadyTimer);
+  window.clearTimeout(arrivalEndTimer);
+  stage.classList.remove("is-arriving");
+  stage.dataset.sceneReady = "false";
+  requestAnimationFrame(() => {
+    stage.classList.add("is-arriving");
+    hint.textContent = "Tu carta está llegando…";
+    const reduceArrivalMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    arrivalReadyTimer = window.setTimeout(() => {
+      stage.dataset.sceneReady = "true";
+      stage.dispatchEvent(new CustomEvent("scene-ready"));
+    }, reduceArrivalMotion ? 0 : 180);
+    arrivalEndTimer = window.setTimeout(() => {
+      stage.classList.remove("is-arriving");
+      if (!toggle.checked && tapCount === 0) hint.textContent = getClosedHint();
+    }, reduceArrivalMotion ? 50 : 2280);
+  });
+}
+
+async function applyLetterModel(modelId) {
+  const model = letterModels[modelId];
+  if (!model) return;
+  const firstSelection = !hasSelectedLetter;
+
+  if (toggle.checked) {
+    toggle.checked = false;
+    setOpen(false);
+  }
+  closeReader();
+  resetResponseState();
+  activeLetterModelId = modelId;
+  activeLetterModel = model;
+  updateLetterRoute(model);
+  readerPageHeadings = model.headings;
+  letterPageCount = model.pages.length;
+
+  letterEyebrow.textContent = model.eyebrow;
+  selectedLetterDate.textContent = model.dateLabel;
+  letterDate.textContent = model.letterDate;
+  readerKicker.textContent = model.letterDate;
+  letterHeading.textContent = model.headings[0];
+  title.textContent = "Tienes una carta";
+  hint.textContent = getClosedHint();
+  sealImage.src = model.visual.sealSrc;
+  applyParticles(model);
+  responseInstruction.textContent = model.interaction?.instruction ?? "";
+  responseStampTrigger.setAttribute("aria-label", model.interaction?.ariaLabel ?? "Abrir el sello de la carta");
+  tapCount = 0;
+  updateTapInterface();
+
+  letter.querySelectorAll("[data-letter-page]").forEach((element) => element.remove());
+  model.pages.forEach((page, pageIndex) => {
+    page.forEach((entry) => {
+      const paragraph = document.createElement("p");
+      const normalizedEntry = typeof entry === "string" ? { text: entry } : entry;
+      paragraph.textContent = normalizedEntry.text;
+      paragraph.dataset.letterPage = String(pageIndex);
+      if (normalizedEntry.signature) paragraph.classList.add("signature");
+      letter.append(paragraph);
+    });
+  });
+
+  stage.dataset.letterTheme = model.visual.theme;
+  letterReader.dataset.letterTheme = model.visual.theme;
+  stage.letterModelDetail = {
+    id: modelId,
+    pageHeadings: [...model.headings],
+    responseEnabled: model.responseEnabled,
+    interaction: model.interaction,
+    ...model.visual
+  };
+  letterDateOptions.forEach((option) => {
+    option.setAttribute("aria-selected", String(option.dataset.letterModel === modelId));
+  });
+  setLetterArchiveOpen(false);
+  setLetterPage(0);
+  stage.removeAttribute("aria-hidden");
+  await ensureEnvelopeModule();
+  stage.dispatchEvent(new CustomEvent("letter-model-change", { detail: stage.letterModelDetail }));
+  if (firstSelection) {
+    hasSelectedLetter = true;
+    letterArchive.classList.remove("is-choosing");
+    scene.classList.remove("is-choosing-letter");
+    scene.classList.add("has-letter");
+    startLetterArrival();
+  }
+}
+
+letterDateToggle.addEventListener("click", () => {
+  setLetterArchiveOpen(!letterArchive.classList.contains("is-open"));
+});
+letterDateOptions.forEach((option) => {
+  option.addEventListener("click", () => applyLetterModel(option.dataset.letterModel));
+});
+document.addEventListener("click", (event) => {
+  if (!letterArchive.contains(event.target)) setLetterArchiveOpen(false);
+});
 
 function updateReader() {
   readerTitle.textContent = readerPageHeadings[currentLetterPage] ?? readerPageHeadings[0];
@@ -119,7 +463,7 @@ function hideResponseInvite() {
 }
 
 function showResponseInvite() {
-  if (!toggle.checked || currentLetterPage !== letterPageCount - 1) return;
+  if (!activeLetterModel?.interaction || !toggle.checked || currentLetterPage !== letterPageCount - 1) return;
   responseUnlocked = true;
   stage.classList.add("response-ready");
   responseInstruction.setAttribute("aria-hidden", "false");
@@ -128,21 +472,40 @@ function showResponseInvite() {
 
 function updateResponseInvite() {
   hideResponseInvite();
-  if (!toggle.checked || currentLetterPage !== letterPageCount - 1) return;
+  if (!activeLetterModel?.interaction || !toggle.checked || currentLetterPage !== letterPageCount - 1) return;
   if (responseUnlocked) {
     showResponseInvite();
     return;
   }
-  responseReadyTimer = window.setTimeout(showResponseInvite, 7000);
+  responseReadyTimer = window.setTimeout(showResponseInvite, activeLetterModel.interaction.delay ?? 7000);
 }
 
 function openResponseDialog() {
-  if (responseStampTrigger.disabled || !toggle.checked) return;
+  const interaction = activeLetterModel?.interaction;
+  if (!interaction || responseStampTrigger.disabled || !toggle.checked) return;
   responseOpenedFrom = document.activeElement;
+  if (interaction.type === "reveal") {
+    responseResolved = true;
+    responseDialog.classList.add("is-reveal");
+    responseDialog.removeAttribute("aria-labelledby");
+    responseDialog.setAttribute("aria-label", interaction.imageAlt ?? "Sorpresa");
+    responseDialog.tabIndex = -1;
+    responseClose.setAttribute("aria-label", "Cerrar la sorpresa");
+    responseQuestion.hidden = true;
+    responseFinal.hidden = false;
+    responseResultKicker.textContent = interaction.kicker ?? "una pequeña sorpresa";
+    responseResultTitle.textContent = interaction.title ?? "Para ti ♡";
+    responseResultCopy.textContent = interaction.copy ?? "";
+    responseResultImage.src = interaction.image;
+    responseResultImage.alt = interaction.imageAlt ?? "Una sorpresa";
+  }
   responseDialog.hidden = false;
   document.body.classList.add("response-open");
   stage.setAttribute("aria-hidden", "true");
-  requestAnimationFrame(() => (responseResolved ? responseDone : responseDate).focus());
+  requestAnimationFrame(() => {
+    if (interaction.type === "reveal") responseDialog.focus();
+    else (responseResolved ? responseDone : responseDate).focus();
+  });
 }
 
 function closeResponseDialog() {
@@ -160,6 +523,8 @@ function showResponseFinal(result) {
   responseResultTitle.textContent = choseDate ? "¡Yahaaa!" : "Okk…";
   responseResultImage.src = choseDate ? "./assets/usagi-happy.gif" : "./assets/usagi-emo.jpg";
   responseResultImage.alt = choseDate ? "Usagi corriendo feliz" : "Usagi emo";
+  responseResultKicker.textContent = "tenemos un plan";
+  responseResultCopy.textContent = "Respuesta enviada ♡";
   responseQuestion.hidden = true;
   responseFinal.hidden = false;
   requestAnimationFrame(() => responseDone.focus());
@@ -248,10 +613,10 @@ responseSend.addEventListener("click", () => {
 });
 document.addEventListener("keydown", (event) => {
   if (event.key !== "Escape") return;
-  if (!responseDialog.hidden) closeResponseDialog();
+  if (letterArchive.classList.contains("is-open")) setLetterArchiveOpen(false);
+  else if (!responseDialog.hidden) closeResponseDialog();
   else if (!letterReader.hidden) closeReader();
 });
-setLetterPage(0);
 updateReaderZoom();
 
 const started = performance.now();
@@ -264,18 +629,9 @@ function load(now) {
   else setTimeout(() => {
     loader.classList.add("loader-away");
     scene.classList.add("scene-ready");
-    stage.classList.add("is-arriving");
-    hint.textContent = "Tu carta está llegando…";
-    const reduceArrivalMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.setTimeout(() => {
-      stage.dataset.sceneReady = "true";
-      stage.dispatchEvent(new CustomEvent("scene-ready"));
-    }, reduceArrivalMotion ? 0 : 180);
-    const arrivalDelay = reduceArrivalMotion ? 50 : 2280;
-    window.setTimeout(() => {
-      stage.classList.remove("is-arriving");
-      if (!toggle.checked && tapCount === 0) hint.textContent = "Toca a Usagi 3 veces para abrirla";
-    }, arrivalDelay);
+    const routedLetterModel = getLetterModelFromRoute();
+    if (routedLetterModel) applyLetterModel(routedLetterModel);
+    else showLetterArchive();
   }, 350);
 }
 requestAnimationFrame(load);
@@ -284,10 +640,13 @@ function setOpen(open) {
   window.clearTimeout(closeReadyTimer);
   close.disabled = true;
   letter.setAttribute("aria-hidden", String(!open));
-  title.textContent = open ? "Esta cartita es para ti" : "Tienes una carta";
-  hint.textContent = open ? "Espero que te saque una sonrisa" : "Toca a Usagi 3 veces para abrirla";
+  title.textContent = open ? activeLetterModel.openTitle : "Tienes una carta";
+  hint.textContent = open ? activeLetterModel.openHint : getClosedHint();
   stage.classList.toggle("is-open", open);
   close.classList.toggle("visible", open);
+  letterDateToggle.disabled = open;
+  letterArchive.classList.toggle("is-disabled", open);
+  if (open) setLetterArchiveOpen(false);
 
   if (open) {
     const closeDelay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 50 : 3250;
@@ -296,25 +655,12 @@ function setOpen(open) {
 
   if (!open) {
     closeReader();
-    closeResponseDialog();
-    hideResponseInvite();
-    responseUnlocked = false;
-    responseSendClicks = 0;
-    responseResolved = false;
-    responseSubmitting = false;
-    responseQuestion.hidden = false;
-    responseFinal.hidden = true;
-    responseDate.disabled = false;
-    responseResultImage.removeAttribute("src");
-    responseResultImage.alt = "";
-    responseSend.disabled = false;
-    responseTease.textContent = "";
+    resetResponseState();
     setLetterPage(0);
     tapCount = 0;
     openingQueued = false;
-    tapProgress.forEach((dot) => dot.classList.remove("is-filled"));
     seal.disabled = false;
-    seal.setAttribute("aria-label", "Tocar a Usagi: faltan 3 toques");
+    updateTapInterface();
   }
 }
 toggle.addEventListener("change", () => setOpen(toggle.checked));
@@ -336,16 +682,20 @@ function tapUsagi() {
   tapLocked = true;
   window.setTimeout(() => { tapLocked = false; }, 170);
 
-  playTapSound(tapCount);
+  const requiredTaps = getTapRequirement();
+  const soundSequence = activeLetterModel.tapSoundSequence ?? [0, 1, 2];
+  playTapSound(soundSequence[Math.min(tapCount, soundSequence.length - 1)] ?? 2);
   tapCount += 1;
-  tapProgress[tapCount - 1]?.classList.add("is-filled");
+  updateTapInterface();
   stage.dispatchEvent(new CustomEvent("seal-tap", { detail: { step: tapCount } }));
 
-  const remaining = 3 - tapCount;
-  seal.setAttribute("aria-label", remaining ? `Tocar a Usagi: faltan ${remaining} toques` : "Abriendo la carta");
-  hint.textContent = tapCount === 1 ? "Una… faltan 2 toques" : tapCount === 2 ? "¿Huh?… falta 1 toque" : "¡IYAHAAA!";
+  const remaining = requiredTaps - tapCount;
+  seal.setAttribute("aria-label", remaining
+    ? `Tocar el sello: ${remaining === 1 ? "falta 1 toque" : `faltan ${remaining} toques`}`
+    : "Abriendo la carta");
+  hint.textContent = activeLetterModel.tapHints?.[tapCount - 1] ?? "¡IYAHAAA!";
 
-  if (tapCount === 3) {
+  if (tapCount === requiredTaps) {
     openingQueued = true;
     seal.disabled = true;
     window.setTimeout(() => {

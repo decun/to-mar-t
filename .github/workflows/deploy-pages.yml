@@ -3,7 +3,7 @@ name: Publicar carta
 on:
   push:
     branches:
-      - main
+      - to-mar-t
   workflow_dispatch:
 
 permissions:
@@ -33,7 +33,11 @@ jobs:
           cp assets/apple-touch-icon.png _site/assets/
           cp assets/page-turn.wav _site/assets/
           cp assets/usagi-sticker.png _site/assets/
+          cp assets/usagi-heart-sticker.png _site/assets/
           cp assets/usagi-letter-stamp-v2.png _site/assets/
+          cp assets/rose-letter-stamp.png _site/assets/
+          cp assets/kitten-rose.png _site/assets/
+          cp assets/share-preview.png _site/assets/
           cp assets/usagi-happy.gif _site/assets/
           cp assets/usagi-emo.jpg _site/assets/
           cp assets/usagi-una.mp3 _site/assets/

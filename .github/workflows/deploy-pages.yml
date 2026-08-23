@@ -27,7 +27,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p _site/app _site/assets/vendor
-          cp index.html script.js cloud-world.js three-envelope.js favicon.ico _site/
+          cp index.html script.js cloud-world.js portal-door.js three-envelope.js favicon.ico _site/
           cp app/globals.css _site/app/
           cp assets/favicon-usagi.png _site/assets/
           cp assets/apple-touch-icon.png _site/assets/
@@ -43,6 +43,8 @@ jobs:
           cp assets/usagi-una.mp3 _site/assets/
           cp assets/usagi-huh.mp3 _site/assets/
           cp assets/usagi-iyaha.mp3 _site/assets/
+          cp assets/wrong-password-buzzer.mp3 _site/assets/
+          cp assets/door-opening-creak.mp3 _site/assets/
           cp assets/vendor/three.module.js _site/assets/vendor/
           cp assets/vendor/three.core.js _site/assets/vendor/
           touch _site/.nojekyll

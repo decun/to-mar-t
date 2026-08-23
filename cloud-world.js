@@ -101,12 +101,12 @@ if (canvas && sky && toggle) {
 
           float farField = cloudField(p * 1.18 + vec2(0.3, 0.16), farWind, 4.7);
           float farLitField = cloudField((p + sunDirection * 0.055) * 1.18 + vec2(0.3, 0.16), farWind, 4.7);
-          float farDensity = cloudDensity(farField, 0.555, 0.075);
+          float farDensity = cloudDensity(farField, 0.55, 0.048);
           farDensity *= 0.72 + 0.28 * smoothstep(-0.55, 0.58, p.y);
 
           float nearField = cloudField(p * 0.82 + vec2(-0.44, -0.28), nearWind, 12.3);
           float nearLitField = cloudField((p + sunDirection * 0.072) * 0.82 + vec2(-0.44, -0.28), nearWind, 12.3);
-          float nearDensity = cloudDensity(nearField, 0.535 + p.y * 0.035, 0.072);
+          float nearDensity = cloudDensity(nearField, 0.525 + p.y * 0.035, 0.046);
           nearDensity *= 1.0 - 0.32 * smoothstep(0.15, 0.82, p.y);
 
           float farLighting = clamp(0.58 + (farField - farLitField) * 5.2, 0.25, 1.0);
@@ -119,8 +119,8 @@ if (canvas && sky && toggle) {
           vec3 farColor = mix(coolShadow, warmLight, farLighting * 0.72 + farEdge * 0.2);
           vec3 nearColor = mix(coolShadow * 0.95, warmLight, nearLighting * 0.76 + nearEdge * 0.22);
 
-          float farAlpha = farDensity * 0.34;
-          float nearAlpha = nearDensity * 0.62;
+          float farAlpha = farDensity * 0.46;
+          float nearAlpha = nearDensity * 0.76;
           float alpha = farAlpha + nearAlpha * (1.0 - farAlpha);
           vec3 color = mix(farColor, nearColor, nearAlpha / max(alpha, 0.001));
 

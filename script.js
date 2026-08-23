@@ -1,6 +1,12 @@
 const loader = document.querySelector("#loader");
 const progress = document.querySelector("#progress");
 const percent = document.querySelector("#percent");
+const portalGate = document.querySelector("#portal-gate");
+const portalWorld = document.querySelector("#portal-world");
+const portalHandleTrigger = document.querySelector("#portal-handle-trigger");
+const portalKeypad = document.querySelector("#portal-keypad");
+const portalKeyInput = document.querySelector("#portal-key-input");
+const portalStatus = document.querySelector("#portal-status");
 const scene = document.querySelector("#scene");
 const stage = document.querySelector("#stage");
 const toggle = document.querySelector("#letter-toggle");
@@ -49,6 +55,8 @@ const responseSend = document.querySelector("#response-send");
 const responseTease = document.querySelector("#response-tease");
 const responseDone = document.querySelector("#response-done");
 const pageTurnSound = document.querySelector("#sound-page-turn");
+const wrongPasswordSound = document.querySelector("#sound-wrong-password");
+const doorOpeningSound = document.querySelector("#sound-door-opening");
 const tapProgress = [...document.querySelectorAll("#tap-progress i")];
 const particles = [...document.querySelectorAll(".particles i")];
 const tapSounds = [
@@ -57,11 +65,11 @@ const tapSounds = [
   document.querySelector("#sound-iyaha")
 ];
 const letterModels = {
-  "2026-08-09": {
-    route: "09-08-2026",
-    dateLabel: "09 AGO 2026",
-    eyebrow: "PARA MARTINA · 09/08/2026",
-    letterDate: "09/08/2026",
+  "2026-08-23": {
+    route: "23-08-2026",
+    dateLabel: "23 AGO 2026",
+    eyebrow: "PARA MARTINA · 23/08/2026",
+    letterDate: "23/08/2026",
     headings: ["Querida Martina,", "Aquel día en la playa,", "Y algo que quiero decirte,"],
     pages: [
       [
@@ -72,9 +80,9 @@ const letterModels = {
         "Recuerdo con mucho cariño el día que estuvimos conversando en la playa sobre nuestras metas. El sol me pegaba tan fuerte que apenas podía abrir los ojos, pero aun así me encantó estar ahí contigo, escucharte y conocerte un poquito más. También recuerdo a alguien tocando un bolero cerca de nosotros y lo nervioso que me puse. Creo que, en el fondo, una parte de mí quería que nos quedáramos un rato más mirando el mar, aunque en ese momento los nervios no me dejaran decirlo."
       ],
       [
-        "Desde que comenzamos a hablar más seguido, conocerte se ha convertido en algo muy bonito para mí. Tu compañía ha traído alegría y tranquilidad a mis días, y me hace feliz poder compartir contigo incluso los momentos más sencillos.",
-        "Deseo de corazón que te vaya bien en todo lo que te propongas. Que sigas avanzando con esa determinación que tanto admiro y, sobre todo, que nunca dejes de ser tú.",
-        { text: "Con cariño, Farid", signature: true }
+        "Me gustas, de verdad. Me gusta la forma en que te expresas; cómo miras a los ojos, tu sonrisa, tu presencia, tu voz y tu inteligencia. Desde que te conocí me pareciste bonita, aunque al principio no tenía el coraje para acercarme.",
+        "Gracias por darme un poquito de tu coraje para poder decirte esto. Quisiera compartir más contigo, Martina. No quiero convertirme en una carga ni interponerme en tus deseos profesionales o de desarrollo personal; solo quiero que sepas que, siempre que lo necesites, puedes acudir a mí.",
+        { text: "Con deseos de que tus deseos se cumplan, Farid", signature: true }
       ]
     ],
     openTitle: "Día de exploración",
@@ -120,6 +128,7 @@ const letterModels = {
         stampGlyphs: false,
         stampComposite: "source-over",
         stampSize: 180,
+        stampOffsetY: 30,
         stampHighlightColor: "rgba(255,239,151,.54)"
       }
     }
@@ -188,6 +197,11 @@ const letterModels = {
     }
   }
 };
+const PORTAL_CODE = "ez";
+let enteredPortalCode = "";
+let portalUnlocking = false;
+let portalKeypadVisible = false;
+let portalDeniedTimer;
 let tapCount = 0;
 let tapLocked = false;
 let openingQueued = false;
@@ -249,6 +263,110 @@ function showLetterArchive() {
   setLetterArchiveOpen(true);
 }
 
+function clearPortalCode(message = "FASILITO") {
+  if (portalUnlocking) return;
+  enteredPortalCode = "";
+  portalKeyInput.value = "";
+  portalStatus.textContent = message;
+}
+
+function denyPortalAccess() {
+  window.clearTimeout(portalDeniedTimer);
+  wrongPasswordSound.pause();
+  wrongPasswordSound.currentTime = 0;
+  wrongPasswordSound.volume = 0.62;
+  wrongPasswordSound.play().catch(() => {});
+  portalGate.classList.remove("is-denied");
+  requestAnimationFrame(() => portalGate.classList.add("is-denied"));
+  portalStatus.textContent = "Esa llave no encaja… intenta otra vez";
+  portalDeniedTimer = window.setTimeout(() => {
+    portalGate.classList.remove("is-denied");
+    clearPortalCode();
+    portalKeyInput.focus();
+  }, 900);
+}
+
+function enterLetterArchive() {
+  try {
+    const archiveUrl = new URL(window.location.href);
+    archiveUrl.search = "";
+    archiveUrl.hash = "";
+    window.history.replaceState({}, "", archiveUrl);
+  } catch (_) {
+    // La entrada sigue funcionando aunque el navegador no permita limpiar la ruta.
+  }
+  showLetterArchive();
+  scene.inert = false;
+  scene.removeAttribute("aria-hidden");
+  scene.classList.add("scene-ready");
+  portalGate.classList.add("portal-away");
+  portalGate.setAttribute("aria-hidden", "true");
+  window.setTimeout(() => letterDateToggle.focus(), 620);
+}
+
+function unlockPortal() {
+  if (portalUnlocking) return;
+  portalUnlocking = true;
+  doorOpeningSound.pause();
+  doorOpeningSound.currentTime = 0;
+  doorOpeningSound.volume = 0.56;
+  doorOpeningSound.play().catch(() => {});
+  window.clearTimeout(portalDeniedTimer);
+  portalGate.classList.remove("is-denied");
+  portalGate.classList.add("is-unlocked");
+  portalGate.dispatchEvent(new CustomEvent("portal-unlock"));
+  portalStatus.textContent = "♡";
+  portalKeyInput.disabled = true;
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  window.setTimeout(() => {
+    portalGate.classList.add("is-entering");
+    portalGate.dispatchEvent(new CustomEvent("portal-enter"));
+  }, reduceMotion ? 160 : 1850);
+  window.setTimeout(enterLetterArchive, reduceMotion ? 380 : 3050);
+}
+
+function validatePortalCode() {
+  if (portalUnlocking) return;
+  enteredPortalCode = portalKeyInput.value.trim().toLowerCase();
+  if (enteredPortalCode === PORTAL_CODE) unlockPortal();
+  else denyPortalAccess();
+}
+
+function revealPortal() {
+  scene.inert = true;
+  scene.setAttribute("aria-hidden", "true");
+  portalKeypadVisible = false;
+  portalKeyInput.disabled = false;
+  clearPortalCode();
+  portalGate.classList.remove("is-keypad-visible");
+  portalKeypad.setAttribute("aria-hidden", "true");
+  portalGate.setAttribute("aria-hidden", "false");
+  requestAnimationFrame(() => portalGate.classList.add("portal-ready"));
+}
+
+function revealPortalKeypad() {
+  if (portalKeypadVisible || portalUnlocking) return;
+  portalKeypadVisible = true;
+  portalGate.classList.add("is-keypad-visible");
+  portalKeypad.setAttribute("aria-hidden", "false");
+  window.setTimeout(() => portalKeyInput.focus(), 420);
+}
+
+portalGate.addEventListener("portal-keypad-request", revealPortalKeypad);
+portalHandleTrigger.addEventListener("click", revealPortalKeypad);
+portalKeyInput.addEventListener("input", () => {
+  portalStatus.textContent = "FASILITO";
+});
+portalKeyInput.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter") return;
+  event.preventDefault();
+  validatePortalCode();
+});
+portalKeypad.addEventListener("submit", (event) => {
+  event.preventDefault();
+  validatePortalCode();
+});
+
 function resetResponseState() {
   closeResponseDialog();
   hideResponseInvite();
@@ -304,7 +422,7 @@ function applyParticles(model) {
 }
 
 function ensureEnvelopeModule() {
-  if (!envelopeModulePromise) envelopeModulePromise = import("./three-envelope.js");
+  if (!envelopeModulePromise) envelopeModulePromise = import("./three-envelope.js?v=letter-final-2");
   return envelopeModulePromise;
 }
 
@@ -612,6 +730,15 @@ responseSend.addEventListener("click", () => {
   }
 });
 document.addEventListener("keydown", (event) => {
+  const portalIsActive = portalGate.getAttribute("aria-hidden") === "false" && !portalGate.classList.contains("portal-away");
+  if (portalIsActive && portalKeypadVisible && !portalUnlocking) {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      clearPortalCode();
+      portalKeyInput.focus();
+    }
+    return;
+  }
   if (event.key !== "Escape") return;
   if (letterArchive.classList.contains("is-open")) setLetterArchiveOpen(false);
   else if (!responseDialog.hidden) closeResponseDialog();
@@ -628,10 +755,7 @@ function load(now) {
   if (value < 100) requestAnimationFrame(load);
   else setTimeout(() => {
     loader.classList.add("loader-away");
-    scene.classList.add("scene-ready");
-    const routedLetterModel = getLetterModelFromRoute();
-    if (routedLetterModel) applyLetterModel(routedLetterModel);
-    else showLetterArchive();
+    revealPortal();
   }, 350);
 }
 requestAnimationFrame(load);

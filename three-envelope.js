@@ -260,6 +260,7 @@ if (canvas && stage && toggle) {
 
       if (letterPalette.showStamp !== false && currentPage === pageCount - 1 && tintedLetterStamp.width) {
         const stampSize = letterPalette.stampSize ?? 190;
+        const stampOffsetY = Number(letterPalette.stampOffsetY) || 0;
         letterContext.save();
         letterContext.translate(875, 620);
         letterContext.rotate(-0.085);
@@ -271,7 +272,7 @@ if (canvas && stage && toggle) {
           letterContext.shadowColor = letterPalette.stampHighlightColor ?? "rgba(255,222,62,.38)";
           letterContext.shadowBlur = 18;
         }
-        letterContext.drawImage(tintedLetterStamp, -stampSize / 2, -108, stampSize, stampSize);
+        letterContext.drawImage(tintedLetterStamp, -stampSize / 2, -108 + stampOffsetY, stampSize, stampSize);
         const glyphPlacements = [
           { x: 62, y: -78, angle: 0.28 },
           { x: 88, y: -48, angle: 0.58 },

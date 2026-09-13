@@ -86,7 +86,7 @@ const letterModels = {
       ]
     ],
     openTitle: "yanodoimas",
-    openHint: "Espero que te saque una sonrisa",
+    openHint: ":3",
     tapCountRequired: 1,
     tapSoundSequence: [2],
     tapHints: ["¡IYAHAAA!"],

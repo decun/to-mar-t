@@ -85,7 +85,7 @@ const letterModels = {
         { text: "Con deseos de que tus deseos se cumplan, Farid", signature: true }
       ]
     ],
-    openTitle: "Día de exploración",
+    openTitle: "yanodoimas",
     openHint: "Espero que te saque una sonrisa",
     tapCountRequired: 1,
     tapSoundSequence: [2],
